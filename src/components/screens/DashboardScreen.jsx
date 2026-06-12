@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from 'react';
-import { Leaf, ArrowRight, ArrowLeft, RefreshCw, Car, Zap, Salad, Map, Trash2, Info, User, Check, Sparkles, MessageCircle } from 'lucide-react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import { Leaf, ArrowRight, ArrowLeft, RefreshCw, Car, Zap, Salad, Map, Trash2, Info, User, Check, Sparkles, MessageCircle, AlertTriangle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { calculateFootprintWithAI } from '../../services/aiService';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -14,94 +15,27 @@ const itemVariants = {
 
 const DashboardScreen = ({ data, recalculate }) => {
   const [selectedActions, setSelectedActions] = useState([]);
+  const [aiData, setAiData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // --- Mock Calculation Logic for Demo ---
-  const calculations = useMemo(() => {
-    // These are simplified mock calculations to give realistic-looking numbers
-    let transport = 0;
-    if (data.transport.carPetrol) transport += parseFloat(data.transport.carPetrol) * 4 * 0.17;
-    if (data.transport.bus) transport += parseFloat(data.transport.bus) * 4 * 0.089;
-    if (data.transport.flightShort) transport += parseFloat(data.transport.flightShort) * 150; // amortized monthly
-    
-    let energy = 0;
-    if (data.energy.elecKwh) energy += parseFloat(data.energy.elecKwh) * 0.82;
-    if (data.energy.lpgCylinders) energy += parseFloat(data.energy.lpgCylinders) * 42;
-    if (data.energy.hasSolar && data.energy.solarKw) {
-      energy -= parseFloat(data.energy.solarKw) * parseFloat(data.energy.solarHours) * 30 * 0.82;
-      if (energy < 0) energy = 0;
-    }
-
-    let food = 0;
-    if (data.foodWaste.diet === 'vegan') food = 60;
-    else if (data.foodWaste.diet === 'vegetarian') food = 80;
-    else if (data.foodWaste.diet === 'mixed') food = 150;
-    else food = 220; // meat heavy
-
-    let waste = 0;
-    if (data.foodWaste.waste === 'low') waste = 10;
-    else if (data.foodWaste.waste === 'average') waste = 30;
-    else waste = 50;
-
-    const total = transport + energy + food + waste;
-
-    // Determine biggest contributor
-    const cats = [
-      { name: 'Transport', val: transport },
-      { name: 'Energy', val: energy },
-      { name: 'Food', val: food },
-      { name: 'Waste', val: waste }
-    ];
-    cats.sort((a, b) => b.val - a.val);
-
-    return {
-      transport: transport.toFixed(2),
-      energy: energy.toFixed(2),
-      food: food.toFixed(2),
-      waste: waste.toFixed(2),
-      total: total.toFixed(2),
-      biggest: cats[0].name
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const result = await calculateFootprintWithAI(data);
+        setAiData(result);
+      } catch (err) {
+        console.error("AI Calculation Failed:", err);
+        setError(err.message || "An error occurred while calculating your footprint.");
+      } finally {
+        setIsLoading(false);
+      }
     };
-  }, [data]);
 
-  // Action Recommendations
-  const actions = [
-    {
-      id: 'food_meatless',
-      category: 'Food',
-      difficulty: 'EASY',
-      title: "Adopt 'Meatless Mondays' or Plant-Based Days",
-      desc: "Substitute meat and dairy with local, plant-based proteins for several days each week.",
-      tip: "Animal agriculture generates significantly higher lifecycle emissions. Choosing plant-based meals cuts down your food carbon footprint.",
-      savings: 25.0
-    },
-    {
-      id: 'energy_led',
-      category: 'Electricity',
-      difficulty: 'EASY',
-      title: "Switch to Energy-Efficient LEDs",
-      desc: "Upgrade traditional incandescent or CFL bulbs in your home to high-efficiency LEDs.",
-      tip: "Replacing home bulbs with LEDs reduces electricity consumption by around 15%, saving 12.9 kg CO2e monthly.",
-      savings: 12.9
-    },
-    {
-      id: 'waste_sort',
-      category: 'Waste',
-      difficulty: 'MEDIUM',
-      title: "Sort Recyclables & Compost Organic Waste",
-      desc: "Separate paper, plastic, and glass for recycling, and compost your organic kitchen scraps to reduce landfill waste.",
-      tip: "Moving from 'average' to low waste output avoids organic decomposition in landfills, saving 7.0 kg CO2e monthly.",
-      savings: 7.0
-    },
-    {
-      id: 'energy_ac',
-      category: 'Electricity',
-      difficulty: 'EASY',
-      title: "Optimize AC Temperature to 24°C+",
-      desc: "Keep your air conditioner set to 24°C or higher and keep filters clean to maximize cooling efficiency.",
-      tip: "Raising your AC temperature by a couple of degrees can reduce your overall energy footprint by 6%, saving 5.2 kg CO2e.",
-      savings: 5.2
-    }
-  ];
+    fetchData();
+  }, [data]);
 
   const toggleAction = (id) => {
     if (selectedActions.includes(id)) {
@@ -111,12 +45,63 @@ const DashboardScreen = ({ data, recalculate }) => {
     }
   };
 
-  const totalSavings = actions
-    .filter(a => selectedActions.includes(a.id))
-    .reduce((sum, a) => sum + a.savings, 0);
+  if (isLoading) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center min-h-[60vh]">
+        <div className="relative">
+          <div className="absolute inset-0 bg-brand-green/20 blur-2xl rounded-full"></div>
+          <motion.div 
+            animate={{ rotate: 360 }}
+            transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+            className="w-20 h-20 rounded-full border-4 border-white/5 border-t-brand-green relative z-10"
+          ></motion.div>
+          <Leaf size={24} className="text-brand-green absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20" />
+        </div>
+        <motion.h2 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="mt-8 text-2xl font-bold text-foreground text-shadow-glow"
+        >
+          Computing your baseline...
+        </motion.h2>
+        <motion.p 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          className="mt-2 text-muted-foreground"
+        >
+          Analyzing your habits and generating tailored recommendations.
+        </motion.p>
+      </div>
+    );
+  }
 
-  const futureTotal = (parseFloat(calculations.total) - totalSavings).toFixed(2);
-  const healthScore = Math.max(0, Math.min(100, Math.round(100 - (parseFloat(calculations.total) / 10))));
+  if (error) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
+        <AlertTriangle size={48} className="text-red-500 mb-6" />
+        <h2 className="text-2xl font-bold text-foreground mb-4">Calculation Failed</h2>
+        <p className="text-muted-foreground mb-8 max-w-md">{error}</p>
+        <button onClick={() => window.location.reload()} className="btn-magic group">
+          <span className="btn-magic-glow"></span>
+          <span className="btn-magic-inner gap-2 px-6">
+            <RefreshCw size={16} /> Try Again
+          </span>
+        </button>
+      </div>
+    );
+  }
+
+  if (!aiData) return null;
+
+  const totalSavings = aiData.actions
+    .filter(a => selectedActions.includes(a.id))
+    .reduce((sum, a) => sum + parseFloat(a.savings), 0);
+
+  const totalNum = parseFloat(aiData.total);
+  const futureTotal = (totalNum - totalSavings).toFixed(2);
+  const healthScore = Math.max(0, Math.min(100, Math.round(100 - (totalNum / 10))));
 
   return (
     <div className="w-full max-w-[1200px] mx-auto px-4 sm:px-8 py-10 relative">
@@ -128,7 +113,7 @@ const DashboardScreen = ({ data, recalculate }) => {
           <h1 className="text-4xl sm:text-5xl font-bold text-foreground tracking-tight text-shadow-glow">Here's where you stand.</h1>
         </div>
         <div className="max-w-xs text-xs text-muted-foreground leading-relaxed md:text-right">
-          Estimated with factor set <span className="font-semibold text-foreground/80">india-demo-2025.1</span>. Treat this as a useful direction, not an exact inventory.
+          Estimated by <span className="font-semibold text-brand-green">Groq AI</span>. Treat this as a useful direction, not an exact inventory.
         </div>
       </motion.div>
 
@@ -151,12 +136,12 @@ const DashboardScreen = ({ data, recalculate }) => {
               </div>
               <div className="flex items-baseline gap-2 mb-8">
                 <span className="text-[64px] sm:text-[80px] font-bold text-foreground leading-none tracking-tighter drop-shadow-lg">
-                  {calculations.total}
+                  {aiData.total}
                 </span>
                 <span className="text-lg font-medium text-muted-foreground">kg CO2e</span>
               </div>
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-sm font-medium">
-                <Sparkles size={16} className="text-amber-400" /> Biggest contributor: <span className="text-foreground">{calculations.biggest}</span>
+                <Sparkles size={16} className="text-amber-400" /> Biggest contributor: <span className="text-foreground capitalize">{aiData.biggest}</span>
               </div>
             </div>
           </motion.div>
@@ -175,22 +160,22 @@ const DashboardScreen = ({ data, recalculate }) => {
 
             <div className="space-y-6">
               {[
-                { name: 'Transport', icon: <Car size={14}/>, val: calculations.transport, color: 'bg-red-400' },
-                { name: 'Electricity', icon: <Zap size={14}/>, val: calculations.energy, color: 'bg-amber-400' },
-                { name: 'Food', icon: <Salad size={14}/>, val: calculations.food, color: 'bg-brand-green' },
-                { name: 'Waste', icon: <Trash2 size={14}/>, val: calculations.waste, color: 'bg-blue-400' }
+                { name: 'Transport', icon: <Car size={14}/>, val: parseFloat(aiData.breakdown.transport), color: 'bg-red-400' },
+                { name: 'Electricity', icon: <Zap size={14}/>, val: parseFloat(aiData.breakdown.energy), color: 'bg-amber-400' },
+                { name: 'Food', icon: <Salad size={14}/>, val: parseFloat(aiData.breakdown.food), color: 'bg-brand-green' },
+                { name: 'Waste', icon: <Trash2 size={14}/>, val: parseFloat(aiData.breakdown.waste), color: 'bg-blue-400' }
               ].map((cat, i) => (
                 <div key={i}>
                   <div className="flex items-center justify-between mb-2 text-sm">
                     <div className="flex items-center gap-2 text-muted-foreground font-medium">
                       <span className={cat.color.replace('bg-', 'text-')}>{cat.icon}</span> {cat.name}
                     </div>
-                    <div className="font-semibold text-foreground/90">{cat.val} <span className="text-xs text-muted-foreground font-normal">kg</span></div>
+                    <div className="font-semibold text-foreground/90">{cat.val.toFixed(1)} <span className="text-xs text-muted-foreground font-normal">kg</span></div>
                   </div>
                   <div className="h-2 bg-black/40 rounded-full overflow-hidden shadow-inner">
                     <motion.div 
                       initial={{ width: 0 }}
-                      animate={{ width: `${Math.min(100, (cat.val / calculations.total) * 100)}%` }}
+                      animate={{ width: `${Math.min(100, (cat.val / totalNum) * 100)}%` }}
                       transition={{ duration: 1, delay: 0.5 + (i * 0.1) }}
                       className={`h-full ${cat.color} rounded-full`}
                     ></motion.div>
@@ -208,7 +193,7 @@ const DashboardScreen = ({ data, recalculate }) => {
             </div>
 
             <div className="space-y-4">
-              {actions.map(action => {
+              {aiData.actions.map(action => {
                 const isSelected = selectedActions.includes(action.id);
                 return (
                   <div 
@@ -228,7 +213,7 @@ const DashboardScreen = ({ data, recalculate }) => {
                           <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-sm ${isSelected ? 'bg-brand-green/20 text-brand-green' : 'bg-white/10 text-muted-foreground'}`}>{action.difficulty}</span>
                         </div>
                         <div className={`text-[11px] font-bold px-2 py-1 rounded-full ${isSelected ? 'bg-brand-green/20 text-brand-green' : 'bg-white/5 text-muted-foreground'}`}>
-                          -{action.savings} kg/month
+                          -{action.savings} kg/mo
                         </div>
                       </div>
                       <h4 className={`text-base font-bold mb-1 ${isSelected ? 'text-brand-green' : 'text-foreground'}`}>{action.title}</h4>
@@ -253,8 +238,8 @@ const DashboardScreen = ({ data, recalculate }) => {
             </div>
             <div className="space-y-3">
               {[
-                "All results are estimates rather than a complete lifecycle inventory.",
-                "Transport factors are representative passenger-mode values and do not model vehicle, fuel, or occupancy details.",
+                "All results are dynamically generated by Groq AI based on your inputs.",
+                "Transport factors are representative passenger-mode values and do not model exact vehicle occupancy details.",
                 "Food and waste values are coarse behavioral proxies for relative coaching."
               ].map((text, i) => (
                 <div key={i} className="flex gap-3 p-3 bg-black/20 rounded-lg border border-white/5 text-sm text-muted-foreground/90">
@@ -328,7 +313,7 @@ const DashboardScreen = ({ data, recalculate }) => {
               </div>
 
               <div className="bg-black/30 rounded-lg p-3 text-[10px] text-muted-foreground leading-relaxed">
-                If you complete all selected recommendations, you will reduce your footprint by <span className="font-bold text-foreground">{(totalSavings / calculations.total * 100).toFixed(1)}%</span>.
+                If you complete all selected recommendations, you will reduce your footprint by <span className="font-bold text-foreground">{(totalSavings / totalNum * 100).toFixed(1)}%</span>.
               </div>
             </div>
           </motion.div>
