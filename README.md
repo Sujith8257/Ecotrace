@@ -67,3 +67,12 @@ for (const key of apiKeys) {
 ## 🎨 Design Philosophy
 
 "Built to trace, not judge." The application deliberately avoids the overused "eco-friendly green-and-white leaf" design. Instead, it leans into a "hacker/cyber" aesthetic with deep dark modes, implying precision, data, and technology, empowering the user to make data-driven decisions.
+
+## 🎯 Hackathon Problem Statement Alignment
+
+This project directly addresses the hackathon problem statement:
+
+- **Meaningful Actionability** — Breaks complex global carbon emission problems into relatable, everyday user habits. The deterministic engine provides baseline measurements and identifies the user's largest carbon contributor.
+- **Context-Aware Recommendations** — The AI leverages the user's specific lifestyle profile (diet, travel, energy) to recommend targeted emission-reduction strategies, calculating precise monthly kilogram savings for each tip.
+- **Transparent Coaching** — EcoCoach avoids hallucinated "AI math." Calculations and assumptions are explicitly presented. The AI layer acts strictly as a coach to explain data and provide actionable advice.
+- **Resiliency & Fallbacks** — The system features a local fallback rule-engine. If the AI fails or times out, the app gracefully degrades to deterministic recommendations using a prioritised model hierarchy.

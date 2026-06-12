@@ -151,8 +151,8 @@ const FoodWasteScreen = ({ data, updateData, goBack, calculate }) => {
         </button>
         <button onClick={calculate} className="btn-magic group">
           <span className="btn-magic-glow"></span>
-          <span className="btn-magic-inner gap-2 text-sm px-6">
-            Next: Review <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
+          <span className="btn-magic-inner gap-2 px-6">
+            Continue <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
           </span>
         </button>
       </motion.div>

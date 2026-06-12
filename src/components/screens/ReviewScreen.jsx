@@ -126,9 +126,7 @@ const ReviewScreen = ({ data, goBack, calculate }) => {
                 Calculating...
               </>
             ) : (
-              <>
-                Calculate My Baseline <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
-              </>
+                Calculate my footprint <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
             )}
           </span>
         </button>

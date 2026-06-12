@@ -116,8 +116,8 @@ const TransportScreen = ({ data, updateData, goBack, goNext }) => {
         </button>
         <button onClick={goNext} className="btn-magic group">
           <span className="btn-magic-glow"></span>
-          <span className="btn-magic-inner gap-2 text-sm px-6">
-            Next: Energy <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
+          <span className="btn-magic-inner gap-2 px-6">
+            Continue <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
           </span>
         </button>
       </motion.div>
