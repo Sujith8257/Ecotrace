@@ -1,0 +1,98 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 140 5% 4%;
+    --foreground: 140 10% 90%;
+    
+    --card: 140 5% 6%;
+    --card-foreground: 140 10% 90%;
+    
+    --popover: 140 5% 6%;
+    --popover-foreground: 140 10% 90%;
+    
+    --primary: 142 71% 45%;
+    --primary-foreground: 144 100% 11%;
+    
+    --secondary: 140 10% 15%;
+    --secondary-foreground: 140 10% 90%;
+    
+    --muted: 140 10% 15%;
+    --muted-foreground: 140 10% 65%;
+    
+    --accent: 140 10% 15%;
+    --accent-foreground: 140 10% 90%;
+    
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 140 10% 90%;
+    
+    --border: 140 10% 15%;
+    --input: 140 10% 15%;
+    --ring: 142 71% 45%;
+    
+    --radius: 0.75rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  /* Hide scrollbar for IE, Edge and Firefox */
+  .no-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+}
+
+@layer components {
+  /* Glassmorphism utility for modern SaaS look */
+  .glass-card {
+    @apply bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] transition-all duration-300;
+  }
+  
+  .glass-card:hover {
+    @apply border-white/20 shadow-[0_8px_32px_0_rgba(74,222,128,0.1)];
+  }
+
+  /* Bento grid styling */
+  .bento-grid {
+    @apply grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 auto-rows-[minmax(180px,auto)];
+  }
+  
+  .bento-item {
+    @apply glass-card p-6 flex flex-col;
+  }
+
+  /* Magic UI style gradient text */
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-brand-green to-emerald-300;
+  }
+
+  /* Magic UI style primary button */
+  .btn-magic {
+    @apply relative inline-flex h-12 overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-brand-green focus:ring-offset-2 focus:ring-offset-background;
+  }
+  
+  .btn-magic-inner {
+    @apply inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-brand-dark px-8 py-1 text-sm font-medium text-white backdrop-blur-3xl transition-all duration-300 hover:bg-brand-dark-soft;
+  }
+  
+  .btn-magic-glow {
+    @apply absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#4ade80_0%,#16a34a_50%,#4ade80_100%)];
+  }
+}
