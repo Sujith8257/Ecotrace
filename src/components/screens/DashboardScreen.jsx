@@ -1,253 +1,367 @@
-import React, { useMemo } from 'react';
-import { Doughnut } from 'react-chartjs-2';
-import { ArrowLeft, RotateCcw, AlertTriangle, Lightbulb, Sun, ShieldCheck, Flame, Leaf, Trash2, ShoppingBag, Map } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { Leaf, ArrowRight, ArrowLeft, RefreshCw, Car, Zap, Salad, Map, Trash2, Info, User, Check, Sparkles, MessageCircle } from 'lucide-react';
+import { motion } from 'framer-motion';
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { staggerChildren: 0.1 } }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
+};
 
 const DashboardScreen = ({ data, recalculate }) => {
+  const [selectedActions, setSelectedActions] = useState([]);
 
-  const results = useMemo(() => {
-    // 1. Transport
+  // --- Mock Calculation Logic for Demo ---
+  const calculations = useMemo(() => {
+    // These are simplified mock calculations to give realistic-looking numbers
     let transport = 0;
-    const tData = data.transport;
-    const tModes = {
-      scooter: 0.035, bicycle: 0, carPetrol: 0.17, carEv: 0.05, truck: 0.25, 
-      bus: 0.089, metro: 0.028, railway: 0.041, flightShort: 0.255, flightLong: 0.195
-    };
+    if (data.transport.carPetrol) transport += parseFloat(data.transport.carPetrol) * 4 * 0.17;
+    if (data.transport.bus) transport += parseFloat(data.transport.bus) * 4 * 0.089;
+    if (data.transport.flightShort) transport += parseFloat(data.transport.flightShort) * 150; // amortized monthly
     
-    Object.keys(tModes).forEach(mode => {
-      let val = parseFloat(tData[mode]) || 0;
-      let ef = tModes[mode];
-      let annual = 0;
-      if (mode.startsWith('flightShort')) annual = val * 1200 * ef; // flights × avg 1200km
-      else if (mode.startsWith('flightLong')) annual = val * 8000 * ef; // flights × avg 8000km
-      else annual = val * 52 * ef / 1000; // weekly km × 52 weeks × ef / 1000 = tonnes
-      transport += annual;
-    });
-
-    // 2. Energy
-    const eData = data.energy;
-    const elecKwh = parseFloat(eData.elecKwh) || 200;
-    const elecEF = 0.82; // India grid avg kg CO2/kWh
-    let elecGross = elecKwh * 12 * elecEF / 1000;
-    
-    let solarGen = 0;
-    if (eData.hasSolar) {
-      const solarKw = parseFloat(eData.solarKw) || 3;
-      const sunHrs = parseFloat(eData.solarHours) || 5.5;
-      solarGen = solarKw * sunHrs * 365 * 0.8 * elecEF / 1000;
+    let energy = 0;
+    if (data.energy.elecKwh) energy += parseFloat(data.energy.elecKwh) * 0.82;
+    if (data.energy.lpgCylinders) energy += parseFloat(data.energy.lpgCylinders) * 42;
+    if (data.energy.hasSolar && data.energy.solarKw) {
+      energy -= parseFloat(data.energy.solarKw) * parseFloat(data.energy.solarHours) * 30 * 0.82;
+      if (energy < 0) energy = 0;
     }
-    const netElec = Math.max(0, elecGross - solarGen);
-    
-    const lpg = parseFloat(eData.lpgCylinders) || 0.5;
-    const lpgCo2 = lpg * 12 * 42 / 1000;
-    
-    const acExtra = eData.acToggle ? 0.15 : 0;
-    const dryerExtra = eData.dryerToggle ? 0.08 : 0;
-    const ledSaving = eData.ledToggle ? -0.04 : 0;
-    
-    const energy = netElec + lpgCo2 + acExtra + dryerExtra + ledSaving;
 
-    // 3. Food & Waste
-    const fwData = data.foodWaste;
-    const dietEFMap = { 'vegan': 0.7, 'plant-based': 1.0, 'vegetarian': 1.3, 'no-meat-fish': 1.5, 'mixed': 2.0, 'meat-heavy': 3.3 };
-    const wasteEFMap = { 'low': 0.1, 'average': 0.5, 'high': 1.2 };
-    
-    const food = dietEFMap[fwData.diet] || 2.0;
-    const waste = wasteEFMap[fwData.waste] || 0.5;
-    
-    let spend = parseFloat(fwData.shoppingSpend) || 2000;
-    let shopping = spend * 12 * 0.000048;
-    if (fwData.secondhandToggle) shopping *= 0.6;
+    let food = 0;
+    if (data.foodWaste.diet === 'vegan') food = 60;
+    else if (data.foodWaste.diet === 'vegetarian') food = 80;
+    else if (data.foodWaste.diet === 'mixed') food = 150;
+    else food = 220; // meat heavy
 
-    const total = transport + energy + food + waste + shopping;
+    let waste = 0;
+    if (data.foodWaste.waste === 'low') waste = 10;
+    else if (data.foodWaste.waste === 'average') waste = 30;
+    else waste = 50;
 
-    return { transport, energy, food, waste, shopping, total, elecGross, solarGen, netElec, hasSolar: eData.hasSolar };
+    const total = transport + energy + food + waste;
+
+    // Determine biggest contributor
+    const cats = [
+      { name: 'Transport', val: transport },
+      { name: 'Energy', val: energy },
+      { name: 'Food', val: food },
+      { name: 'Waste', val: waste }
+    ];
+    cats.sort((a, b) => b.val - a.val);
+
+    return {
+      transport: transport.toFixed(2),
+      energy: energy.toFixed(2),
+      food: food.toFixed(2),
+      waste: waste.toFixed(2),
+      total: total.toFixed(2),
+      biggest: cats[0].name
+    };
   }, [data]);
 
-  const { total, transport, energy, food, waste, shopping } = results;
-  const annual = parseFloat(total.toFixed(2));
-  const indiaAvg = 4.7, parisTarget = 2.0;
-  
-  const score = Math.max(0, Math.min(100, Math.round(100 - (annual - parisTarget) / (indiaAvg * 3 - parisTarget) * 100)));
-  
-  let color, rating, detail;
-  if (annual <= 2.0) { color = 'var(--green)'; rating = 'exceptional 🌱'; detail = 'You\'re at or below the Paris 2°C target. You\'re in the top tier globally.'; }
-  else if (annual <= 3.5) { color = '#86efac'; rating = 'below average 👍'; detail = 'Your footprint is well below the Indian average. A few more changes and you\'ll be near the Paris target.'; }
-  else if (annual <= 4.7) { color = 'var(--amber)'; rating = 'near average ⚡'; detail = `You're close to the average Indian, but still ${(annual/parisTarget).toFixed(1)}× the Paris target. There's solid room to improve.`; }
-  else if (annual <= 7.0) { color = '#fb923c'; rating = 'above average ⚠️'; detail = 'Your footprint exceeds the Indian average. Targeted changes to your top categories can make a big dent.'; }
-  else { color = 'var(--red)'; rating = 'high impact 🔴'; detail = 'Your footprint is above the global average. Small consistent changes across transport, energy, and diet will have a major effect.'; }
+  // Action Recommendations
+  const actions = [
+    {
+      id: 'food_meatless',
+      category: 'Food',
+      difficulty: 'EASY',
+      title: "Adopt 'Meatless Mondays' or Plant-Based Days",
+      desc: "Substitute meat and dairy with local, plant-based proteins for several days each week.",
+      tip: "Animal agriculture generates significantly higher lifecycle emissions. Choosing plant-based meals cuts down your food carbon footprint.",
+      savings: 25.0
+    },
+    {
+      id: 'energy_led',
+      category: 'Electricity',
+      difficulty: 'EASY',
+      title: "Switch to Energy-Efficient LEDs",
+      desc: "Upgrade traditional incandescent or CFL bulbs in your home to high-efficiency LEDs.",
+      tip: "Replacing home bulbs with LEDs reduces electricity consumption by around 15%, saving 12.9 kg CO2e monthly.",
+      savings: 12.9
+    },
+    {
+      id: 'waste_sort',
+      category: 'Waste',
+      difficulty: 'MEDIUM',
+      title: "Sort Recyclables & Compost Organic Waste",
+      desc: "Separate paper, plastic, and glass for recycling, and compost your organic kitchen scraps to reduce landfill waste.",
+      tip: "Moving from 'average' to low waste output avoids organic decomposition in landfills, saving 7.0 kg CO2e monthly.",
+      savings: 7.0
+    },
+    {
+      id: 'energy_ac',
+      category: 'Electricity',
+      difficulty: 'EASY',
+      title: "Optimize AC Temperature to 24°C+",
+      desc: "Keep your air conditioner set to 24°C or higher and keep filters clean to maximize cooling efficiency.",
+      tip: "Raising your AC temperature by a couple of degrees can reduce your overall energy footprint by 6%, saving 5.2 kg CO2e.",
+      savings: 5.2
+    }
+  ];
 
-  const ringData = {
-    datasets: [{
-      data: [score, 100 - score],
-      backgroundColor: [color, 'rgba(255,255,255,0.05)'],
-      borderWidth: 0,
-      circumference: 280,
-      rotation: -140
-    }]
+  const toggleAction = (id) => {
+    if (selectedActions.includes(id)) {
+      setSelectedActions(selectedActions.filter(a => a !== id));
+    } else {
+      setSelectedActions([...selectedActions, id]);
+    }
   };
 
-  const donutData = {
-    labels: ['Transport', 'Energy', 'Food', 'Waste', 'Shopping'],
-    datasets: [{
-      data: [transport, energy, food, waste, shopping].map(v => parseFloat(v.toFixed(3))),
-      backgroundColor: ['var(--red)', 'var(--amber)', 'var(--green)', 'var(--blue)', 'var(--purple)'],
-      borderWidth: 0,
-      hoverOffset: 4
-    }]
-  };
+  const totalSavings = actions
+    .filter(a => selectedActions.includes(a.id))
+    .reduce((sum, a) => sum + a.savings, 0);
 
-  // Find biggest opportunity
-  const cats = [
-    { id: 'transport', val: transport },
-    { id: 'energy', val: energy },
-    { id: 'food', val: food },
-    { id: 'waste', val: waste },
-    { id: 'shopping', val: shopping }
-  ].sort((a, b) => b.val - a.val);
-  const topCat = cats[0].id;
-  
-  const insightMap = {
-    transport: 'Transport is your single biggest emitter. Switching 2 days/week to public transit or cycling for short trips could save 0.3–0.8 tCO₂e per year.',
-    energy: 'Home energy is your biggest category. Raising your AC setpoint by 2°C, switching to LED, and checking for phantom loads could cut this by 15–25%.',
-    food: 'Diet is your largest source. Even one meat-free day per week saves ~0.1–0.2 tCO₂e annually — and red meat substitution has the biggest impact.',
-    waste: 'Household waste adds up. Composting food scraps and sorting recyclables consistently could reduce this by up to 60%.',
-    shopping: 'Your consumption footprint is your biggest. Buying second-hand or refurbished and extending product lifetimes are the two highest-impact moves.'
-  };
+  const futureTotal = (parseFloat(calculations.total) - totalSavings).toFixed(2);
+  const healthScore = Math.max(0, Math.min(100, Math.round(100 - (parseFloat(calculations.total) / 10))));
 
   return (
-    <div className="animate-fade-in" style={{ maxWidth: '1000px', margin: '0 auto', padding: '2rem' }}>
+    <div className="w-full max-w-[1200px] mx-auto px-4 sm:px-8 py-10 relative">
       
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
+      {/* Top Header */}
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 gap-4">
         <div>
-          <h2 style={{ fontSize: '28px', fontWeight: 600, letterSpacing: '-0.02em' }}>your carbon footprint</h2>
-          <div style={{ fontSize: '14px', color: 'var(--text2)', marginTop: '4px' }}>calculated just now</div>
+          <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand-green mb-2">Your Monthly Baseline</div>
+          <h1 className="text-4xl sm:text-5xl font-bold text-foreground tracking-tight text-shadow-glow">Here's where you stand.</h1>
         </div>
-        <button className="btn-secondary" onClick={recalculate} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <RotateCcw size={16} /> recalculate
+        <div className="max-w-xs text-xs text-muted-foreground leading-relaxed md:text-right">
+          Estimated with factor set <span className="font-semibold text-foreground/80">india-demo-2025.1</span>. Treat this as a useful direction, not an exact inventory.
+        </div>
+      </motion.div>
+
+      <motion.div 
+        variants={containerVariants}
+        initial="hidden"
+        animate="show"
+        className="grid grid-cols-1 lg:grid-cols-12 gap-8"
+      >
+        {/* ================= LEFT COLUMN ================= */}
+        <div className="col-span-1 lg:col-span-8 flex flex-col gap-8">
+          
+          {/* Hero Score Card */}
+          <motion.div variants={itemVariants} className="relative overflow-hidden rounded-[24px] p-8 sm:p-12 shadow-2xl bg-black border border-white/5">
+            <div className="absolute inset-0 bg-gradient-to-br from-brand-green/20 to-transparent opacity-50"></div>
+            <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-brand-green/30 rounded-full blur-[100px] pointer-events-none"></div>
+            <div className="relative z-10">
+              <div className="flex items-center gap-2 text-sm text-brand-green font-medium mb-4">
+                <Leaf size={16} /> Estimated monthly footprint
+              </div>
+              <div className="flex items-baseline gap-2 mb-8">
+                <span className="text-[64px] sm:text-[80px] font-bold text-foreground leading-none tracking-tighter drop-shadow-lg">
+                  {calculations.total}
+                </span>
+                <span className="text-lg font-medium text-muted-foreground">kg CO2e</span>
+              </div>
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-sm font-medium">
+                <Sparkles size={16} className="text-amber-400" /> Biggest contributor: <span className="text-foreground">{calculations.biggest}</span>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Breakdown Card */}
+          <motion.div variants={itemVariants} className="bg-card/40 backdrop-blur-xl border border-white/5 rounded-[24px] p-8">
+            <div className="flex items-center justify-between mb-8 cursor-pointer group">
+              <div>
+                <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-1">Your Breakdown</div>
+                <h3 className="text-xl font-bold text-foreground">What shapes your total</h3>
+              </div>
+              <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-muted-foreground group-hover:bg-white/10 group-hover:text-foreground transition-colors">
+                <ArrowRight size={16} />
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              {[
+                { name: 'Transport', icon: <Car size={14}/>, val: calculations.transport, color: 'bg-red-400' },
+                { name: 'Electricity', icon: <Zap size={14}/>, val: calculations.energy, color: 'bg-amber-400' },
+                { name: 'Food', icon: <Salad size={14}/>, val: calculations.food, color: 'bg-brand-green' },
+                { name: 'Waste', icon: <Trash2 size={14}/>, val: calculations.waste, color: 'bg-blue-400' }
+              ].map((cat, i) => (
+                <div key={i}>
+                  <div className="flex items-center justify-between mb-2 text-sm">
+                    <div className="flex items-center gap-2 text-muted-foreground font-medium">
+                      <span className={cat.color.replace('bg-', 'text-')}>{cat.icon}</span> {cat.name}
+                    </div>
+                    <div className="font-semibold text-foreground/90">{cat.val} <span className="text-xs text-muted-foreground font-normal">kg</span></div>
+                  </div>
+                  <div className="h-2 bg-black/40 rounded-full overflow-hidden shadow-inner">
+                    <motion.div 
+                      initial={{ width: 0 }}
+                      animate={{ width: `${Math.min(100, (cat.val / calculations.total) * 100)}%` }}
+                      transition={{ duration: 1, delay: 0.5 + (i * 0.1) }}
+                      className={`h-full ${cat.color} rounded-full`}
+                    ></motion.div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* Action Plan Card */}
+          <motion.div variants={itemVariants} className="bg-card/40 backdrop-blur-xl border border-white/5 rounded-[24px] p-8">
+            <div className="mb-8">
+              <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-1">Climate Action Plan</div>
+              <h3 className="text-xl font-bold text-foreground">Tailored recommendations</h3>
+            </div>
+
+            <div className="space-y-4">
+              {actions.map(action => {
+                const isSelected = selectedActions.includes(action.id);
+                return (
+                  <div 
+                    key={action.id}
+                    onClick={() => toggleAction(action.id)}
+                    className={`p-5 rounded-xl border transition-all cursor-pointer flex gap-4 ${isSelected ? 'bg-brand-green/5 border-brand-green shadow-[0_0_15px_rgba(74,222,128,0.1)]' : 'bg-black/20 border-white/5 hover:border-white/10'}`}
+                  >
+                    <div className="mt-1 flex-shrink-0">
+                      <div className={`w-5 h-5 rounded flex items-center justify-center border transition-colors ${isSelected ? 'bg-brand-green border-brand-green text-black' : 'border-white/20 bg-transparent'}`}>
+                        {isSelected && <Check size={14} strokeWidth={3} />}
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-start justify-between gap-4 mb-2">
+                        <div className="flex items-center gap-2">
+                          <span className={`text-[10px] font-bold uppercase tracking-wider ${isSelected ? 'text-brand-green' : 'text-muted-foreground'}`}>{action.category}</span>
+                          <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-sm ${isSelected ? 'bg-brand-green/20 text-brand-green' : 'bg-white/10 text-muted-foreground'}`}>{action.difficulty}</span>
+                        </div>
+                        <div className={`text-[11px] font-bold px-2 py-1 rounded-full ${isSelected ? 'bg-brand-green/20 text-brand-green' : 'bg-white/5 text-muted-foreground'}`}>
+                          -{action.savings} kg/month
+                        </div>
+                      </div>
+                      <h4 className={`text-base font-bold mb-1 ${isSelected ? 'text-brand-green' : 'text-foreground'}`}>{action.title}</h4>
+                      <p className="text-sm text-muted-foreground leading-relaxed mb-4">{action.desc}</p>
+                      
+                      <div className={`p-3 rounded-lg text-xs leading-relaxed transition-colors ${isSelected ? 'bg-brand-green/10 text-brand-green/90' : 'bg-white/5 text-muted-foreground'}`}>
+                        <Sparkles size={12} className="inline mr-1 -mt-0.5" />
+                        {action.tip}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </motion.div>
+
+          {/* What to know */}
+          <motion.div variants={itemVariants} className="bg-card/40 backdrop-blur-xl border border-white/5 rounded-[24px] p-8">
+            <div className="mb-6">
+              <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-1">What to know</div>
+              <h3 className="text-xl font-bold text-foreground">This estimate stays honest.</h3>
+            </div>
+            <div className="space-y-3">
+              {[
+                "All results are estimates rather than a complete lifecycle inventory.",
+                "Transport factors are representative passenger-mode values and do not model vehicle, fuel, or occupancy details.",
+                "Food and waste values are coarse behavioral proxies for relative coaching."
+              ].map((text, i) => (
+                <div key={i} className="flex gap-3 p-3 bg-black/20 rounded-lg border border-white/5 text-sm text-muted-foreground/90">
+                  <Info size={16} className="text-brand-green flex-shrink-0 mt-0.5" />
+                  <p>{text}</p>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+
+        </div>
+
+        {/* ================= RIGHT COLUMN ================= */}
+        <div className="col-span-1 lg:col-span-4 flex flex-col gap-8">
+          
+          {/* Health Score Card */}
+          <motion.div variants={itemVariants} className="bg-card/40 backdrop-blur-xl border border-white/5 rounded-[24px] p-6">
+            <div className="flex justify-between items-start mb-6">
+              <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Carbon Health Score</div>
+              <div className="w-10 h-10 rounded-full bg-brand-green/20 flex items-center justify-center text-brand-green border border-brand-green/30">
+                <Leaf size={18} />
+              </div>
+            </div>
+            <div className="text-[48px] font-bold text-foreground leading-none mb-4">{healthScore}</div>
+            <div className="h-2 w-full bg-black/50 rounded-full overflow-hidden mb-4">
+              <motion.div 
+                initial={{ width: 0 }}
+                animate={{ width: `${healthScore}%` }}
+                transition={{ duration: 1.5, ease: "easeOut" }}
+                className="h-full bg-gradient-to-r from-brand-green to-emerald-400 rounded-full"
+              ></motion.div>
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Your score is <span className="font-semibold text-foreground">high impact</span>. It compares your estimate with a 2 tCO2e annual lifestyle target.
+            </p>
+          </motion.div>
+
+          {/* Compare Card */}
+          <motion.div variants={itemVariants} className="bg-card/40 backdrop-blur-xl border border-white/5 rounded-[24px] p-6">
+            <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-1">Compare & Save</div>
+            <h3 className="text-lg font-bold text-foreground mb-3">Where do you rank?</h3>
+            <p className="text-sm text-muted-foreground leading-relaxed mb-6">
+              Sign in securely to save this estimate to your profile and unlock your community percentile rank.
+            </p>
+            <button className="w-full py-3 rounded-xl bg-black border border-white/10 hover:border-white/20 transition-colors flex items-center justify-center gap-2 text-sm font-medium text-foreground">
+              <User size={16} /> Sign In to Compare & Save
+            </button>
+          </motion.div>
+
+          {/* Impact Calculator Card (Interactive) */}
+          <motion.div variants={itemVariants} className="bg-card/40 backdrop-blur-xl border border-brand-green/20 rounded-[24px] p-6 relative overflow-hidden">
+            <div className="absolute inset-0 bg-brand-green/5"></div>
+            <div className="relative z-10">
+              <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-brand-green mb-1">
+                <RefreshCw size={12} /> Impact Calculator
+              </div>
+              <h3 className="text-lg font-bold text-foreground mb-3">Future Footprint</h3>
+              <p className="text-sm text-brand-green/80 leading-relaxed mb-6">
+                Check actions on the left to see how much carbon you could save next month.
+              </p>
+
+              <div className="flex gap-4 mb-6">
+                <div className="flex-1 bg-black/40 border border-white/5 rounded-xl p-4 flex flex-col items-center justify-center relative overflow-hidden">
+                  <div className="text-2xl font-bold text-foreground mb-1">{futureTotal}</div>
+                  <div className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Future (kg CO2e)</div>
+                </div>
+                <div className="flex-1 bg-brand-green/10 border border-brand-green/20 rounded-xl p-4 flex flex-col items-center justify-center shadow-[0_0_15px_rgba(74,222,128,0.1)]">
+                  <div className="text-2xl font-bold text-brand-green mb-1">-{totalSavings.toFixed(1)}</div>
+                  <div className="text-[9px] font-bold uppercase tracking-wider text-brand-green">Monthly Savings</div>
+                </div>
+              </div>
+
+              <div className="bg-black/30 rounded-lg p-3 text-[10px] text-muted-foreground leading-relaxed">
+                If you complete all selected recommendations, you will reduce your footprint by <span className="font-bold text-foreground">{(totalSavings / calculations.total * 100).toFixed(1)}%</span>.
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Every Step Counts */}
+          <motion.div variants={itemVariants} className="bg-card/40 backdrop-blur-xl border border-white/5 rounded-[24px] p-8 flex flex-col items-center text-center">
+            <div className="w-16 h-16 rounded-full bg-brand-green/10 text-brand-green flex items-center justify-center mb-6">
+              <Leaf size={24} />
+            </div>
+            <h3 className="text-lg font-bold text-foreground mb-3">Every Step Counts</h3>
+            <p className="text-sm text-muted-foreground leading-relaxed mb-6">
+              Reducing your emissions isn't about perfection. It's about small, consistent adjustments to your everyday routine.
+            </p>
+            <button className="px-5 py-2 rounded-full bg-white/5 text-foreground border border-white/10 hover:bg-white/10 text-xs font-bold uppercase tracking-wider transition-colors">
+              Climate Action Mode
+            </button>
+          </motion.div>
+
+        </div>
+      </motion.div>
+
+      {/* Recalculate Top Bar / Bottom buttons */}
+      <div className="flex justify-center mt-12 mb-8">
+        <button onClick={recalculate} className="flex items-center gap-2 text-muted-foreground text-sm font-semibold px-4 py-2 rounded-full hover:bg-white/5 hover:text-foreground transition-colors focus-visible:outline-none">
+          <RefreshCw size={16} /> Update my answers
         </button>
       </div>
 
-      <div className="glass-panel" style={{ padding: '2rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '2.5rem', flexWrap: 'wrap' }}>
-        <div style={{ position: 'relative', width: '140px', height: '140px', flexShrink: 0 }}>
-          <Doughnut data={ringData} options={{ responsive: true, maintainAspectRatio: false, cutout: '80%', plugins: { tooltip: { enabled: false } } }} />
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-            <div className="font-mono" style={{ fontSize: '36px', fontWeight: 700, lineHeight: 1, color }}>{score}</div>
-            <div style={{ fontSize: '11px', color: 'var(--text2)', marginTop: '4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>eco score</div>
-          </div>
-        </div>
-        
-        <div style={{ flex: 1, minWidth: '250px' }}>
-          <div style={{ fontSize: '24px', fontWeight: 600, letterSpacing: '-0.02em', marginBottom: '8px' }}>{rating}</div>
-          <div style={{ fontSize: '15px', color: 'var(--text2)', lineHeight: 1.6 }}>{detail}</div>
-          
-          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginTop: '1.25rem' }}>
-            {results.hasSolar && <span style={{ padding: '6px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 500, background: 'var(--amber-dim)', color: 'var(--amber)', border: '1px solid rgba(251,191,36,0.2)', display: 'flex', alignItems: 'center', gap: '6px' }}><Sun size={14} /> solar powered</span>}
-            {transport < 0.5 && <span style={{ padding: '6px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 500, background: 'var(--green-dim2)', color: 'var(--green)', border: '1px solid rgba(74,222,128,0.2)', display: 'flex', alignItems: 'center', gap: '6px' }}><Map size={14} /> low transport</span>}
-            {food <= 1.3 && <span style={{ padding: '6px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 500, background: 'var(--green-dim2)', color: 'var(--green)', border: '1px solid rgba(74,222,128,0.2)', display: 'flex', alignItems: 'center', gap: '6px' }}><Leaf size={14} /> plant-forward</span>}
-            {waste <= 0.1 && <span style={{ padding: '6px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 500, background: 'var(--blue-dim)', color: 'var(--blue)', border: '1px solid rgba(96,165,250,0.2)', display: 'flex', alignItems: 'center', gap: '6px' }}><ShieldCheck size={14} /> low waste</span>}
-          </div>
-        </div>
-      </div>
-
-      <div className="grid-4" style={{ marginBottom: '1.5rem' }}>
-        {[
-          { icon: <Flame size={20} color="var(--red)" />, val: annual.toFixed(1), unit: 't', name: 'tCO₂e / year' },
-          { icon: <Map size={20} color="var(--blue)" />, val: (annual/12).toFixed(2), unit: 't', name: 'tCO₂e / month' },
-          { icon: <AlertTriangle size={20} color="var(--amber)" />, val: Math.abs(Math.round((annual/4.7-1)*100)), unit: '%', name: 'vs india avg (4.7t)', sub: annual < 4.7 ? <span style={{color:'var(--green)', fontSize:'12px'}}>↓ below average</span> : <span style={{color:'var(--red)', fontSize:'12px'}}>↑ above average</span> },
-          { icon: <ShieldCheck size={20} color="var(--green)" />, val: (annual/2.0).toFixed(1), unit: '×', name: 'vs paris target (2t)' }
-        ].map((m, i) => (
-          <div key={i} className="glass-panel" style={{ padding: '20px' }}>
-            <div style={{ marginBottom: '12px' }}>{m.icon}</div>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
-              <span className="font-mono" style={{ fontSize: '28px', fontWeight: 700 }}>{m.val}</span>
-              <span style={{ fontSize: '14px', color: 'var(--text3)' }}>{m.unit}</span>
-            </div>
-            <div style={{ fontSize: '13px', color: 'var(--text2)', marginTop: '4px' }}>{m.name}</div>
-            {m.sub && <div style={{ marginTop: '8px' }}>{m.sub}</div>}
-          </div>
-        ))}
-      </div>
-
-      <div style={{ background: 'var(--green-dim2)', border: '1px solid rgba(74,222,128,0.2)', borderRadius: 'var(--radius)', padding: '1.5rem', marginBottom: '1.5rem', display: 'flex', gap: '16px' }}>
-        <Lightbulb size={24} color="var(--green)" style={{ flexShrink: 0 }} />
-        <div>
-          <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--green)', marginBottom: '6px' }}>biggest opportunity</div>
-          <div style={{ fontSize: '14px', color: 'rgba(74,222,128,0.9)', lineHeight: 1.6 }}>{insightMap[topCat]}</div>
-        </div>
-      </div>
-
-      <div className="grid-2">
-        <div className="glass-panel" style={{ padding: '1.5rem' }}>
-          <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text2)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '1.5rem' }}>emissions breakdown</div>
-          
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {[
-              { name: 'transport', val: transport, color: 'var(--red)' },
-              { name: 'energy', val: energy, color: 'var(--amber)' },
-              { name: 'food', val: food, color: 'var(--green)' },
-              { name: 'waste', val: waste, color: 'var(--blue)' },
-              { name: 'shopping', val: shopping, color: 'var(--purple)' }
-            ].map(c => {
-              const max = Math.max(...cats.map(x => x.val), 0.1);
-              return (
-                <div key={c.name} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ fontSize: '13px', width: '80px', flexShrink: 0 }}>{c.name}</div>
-                  <div style={{ flex: 1, height: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px', overflow: 'hidden' }}>
-                    <div style={{ height: '100%', width: `${Math.round((c.val/max)*100)}%`, background: c.color, borderRadius: '4px', transition: 'width 1s ease-out' }}></div>
-                  </div>
-                  <div className="font-mono" style={{ fontSize: '12px', width: '50px', textAlign: 'right', color: 'var(--text2)' }}>{c.val.toFixed(2)}t</div>
-                </div>
-              );
-            })}
-          </div>
-
-          <div style={{ height: '220px', marginTop: '2rem', position: 'relative' }}>
-            <Doughnut data={donutData} options={{ responsive: true, maintainAspectRatio: false, cutout: '65%', plugins: { legend: { display: false } } }} />
-          </div>
-        </div>
-
-        <div className="glass-panel" style={{ padding: '1.5rem' }}>
-          <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text2)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '1.5rem' }}>you vs benchmarks</div>
-          
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            {[
-              { name: 'you', val: annual, color: 'var(--green)' },
-              { name: 'india avg', val: 4.7, color: 'var(--amber)' },
-              { name: 'global avg', val: 7.0, color: 'var(--red)' },
-              { name: 'paris target', val: 2.0, color: 'var(--blue)' },
-              { name: 'us avg', val: 14.5, color: 'var(--purple)' }
-            ].map(b => {
-              const max = 14.5;
-              return (
-                <div key={b.name}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: 'var(--text3)', marginBottom: '8px' }}>
-                    <span>{b.name}</span>
-                    <span className="font-mono">{b.val.toFixed(1)} tCO₂e</span>
-                  </div>
-                  <div style={{ height: '12px', background: 'rgba(255,255,255,0.05)', borderRadius: '6px', overflow: 'hidden' }}>
-                    <div style={{ height: '100%', width: `${(b.val/max)*100}%`, background: b.color, borderRadius: '6px', transition: 'width 1s ease-out' }}></div>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-
-          {results.hasSolar && (
-            <div style={{ marginTop: '3rem', paddingTop: '1.5rem', borderTop: '1px solid var(--glass-border-hover)' }}>
-              <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--amber)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '6px' }}><Sun size={14} /> solar impact</div>
-              <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
-                <div>
-                  <div className="font-mono" style={{ fontSize: '20px', fontWeight: 700, color: 'var(--amber)' }}>{results.solarGen.toFixed(2)}t</div>
-                  <div style={{ fontSize: '11px', color: 'var(--text3)', marginTop: '2px' }}>CO₂ offset / yr</div>
-                </div>
-                <div>
-                  <div className="font-mono" style={{ fontSize: '20px', fontWeight: 700, color: 'var(--green)' }}>{results.elecGross > 0 ? Math.min(100, Math.round(results.solarGen/results.elecGross*100)) : 0}%</div>
-                  <div style={{ fontSize: '11px', color: 'var(--text3)', marginTop: '2px' }}>of elec needs</div>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
+      {/* Sticky Coach Button */}
+      <div className="fixed bottom-6 right-6 z-50">
+        <button className="flex items-center gap-2 px-5 py-3 rounded-full bg-brand-green hover:bg-brand-green/90 text-black font-bold shadow-[0_0_20px_rgba(74,222,128,0.4)] transition-transform hover:scale-105 active:scale-95">
+          <MessageCircle size={18} /> Chat with Trace
+        </button>
       </div>
 
     </div>

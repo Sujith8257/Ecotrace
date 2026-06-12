@@ -1,90 +1,127 @@
 import React from 'react';
 import { ArrowLeft, ArrowRight, Car, Bike, Train, Bus, Plane } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const modes = [
-  { id: 'scooter', name: 'scooter / petrol', icon: <Bike size={24} />, ef: 0.035, label: 'km per week', unit: '~0.035 kg CO₂/km', ph: 'e.g. 80' },
-  { id: 'bicycle', name: 'bicycle', icon: <Bike size={24} />, ef: 0, label: 'km per week', unit: 'zero direct emissions', ph: 'e.g. 30' },
-  { id: 'carPetrol', name: 'car (petrol)', icon: <Car size={24} />, ef: 0.17, label: 'km per week', unit: '~0.17 kg CO₂/km', ph: 'e.g. 100' },
-  { id: 'carEv', name: 'car (electric)', icon: <Car size={24} />, ef: 0.05, label: 'km per week', unit: '~0.05 kg CO₂/km', ph: 'e.g. 100' },
-  { id: 'truck', name: 'truck / van', icon: <Car size={24} />, ef: 0.25, label: 'km per week', unit: '~0.25 kg CO₂/km', ph: 'e.g. 150' },
-  { id: 'bus', name: 'bus', icon: <Bus size={24} />, ef: 0.089, label: 'km per week', unit: '~0.089 kg CO₂/km', ph: 'e.g. 60' },
-  { id: 'metro', name: 'metro / subway', icon: <Train size={24} />, ef: 0.028, label: 'km per week', unit: '~0.028 kg CO₂/km', ph: 'e.g. 50' },
-  { id: 'railway', name: 'train / railway', icon: <Train size={24} />, ef: 0.041, label: 'km per week', unit: '~0.041 kg CO₂/km', ph: 'e.g. 200' },
-  { id: 'flightShort', name: 'short haul (<3h)', icon: <Plane size={24} />, ef: 0.255, label: 'flights per year', unit: '~0.255 kg CO₂/km avg', ph: 'e.g. 4' },
-  { id: 'flightLong', name: 'long haul (>6h)', icon: <Plane size={24} />, ef: 0.195, label: 'flights per year', unit: '~0.195 kg CO₂/km avg', ph: 'e.g. 1' },
+  { id: 'scooter', name: 'Scooter / Petrol', icon: <Bike size={24} />, label: 'km per week', unit: '~0.035 kg CO₂/km', ph: 'e.g. 80' },
+  { id: 'bicycle', name: 'Bicycle', icon: <Bike size={24} />, label: 'km per week', unit: 'Zero direct emissions', ph: 'e.g. 30' },
+  { id: 'carPetrol', name: 'Car (Petrol)', icon: <Car size={24} />, label: 'km per week', unit: '~0.17 kg CO₂/km', ph: 'e.g. 100' },
+  { id: 'carEv', name: 'Car (Electric)', icon: <Car size={24} />, label: 'km per week', unit: '~0.05 kg CO₂/km', ph: 'e.g. 100' },
+  { id: 'truck', name: 'Truck / Van', icon: <Car size={24} />, label: 'km per week', unit: '~0.25 kg CO₂/km', ph: 'e.g. 150' },
+  { id: 'bus', name: 'Bus', icon: <Bus size={24} />, label: 'km per week', unit: '~0.089 kg CO₂/km', ph: 'e.g. 60' },
+  { id: 'metro', name: 'Metro / Subway', icon: <Train size={24} />, label: 'km per week', unit: '~0.028 kg CO₂/km', ph: 'e.g. 50' },
+  { id: 'railway', name: 'Train / Railway', icon: <Train size={24} />, label: 'km per week', unit: '~0.041 kg CO₂/km', ph: 'e.g. 200' },
+  { id: 'flightShort', name: 'Short Haul (<3h)', icon: <Plane size={24} />, label: 'flights per year', unit: '~0.255 kg CO₂/km avg', ph: 'e.g. 4' },
+  { id: 'flightLong', name: 'Long Haul (>6h)', icon: <Plane size={24} />, label: 'flights per year', unit: '~0.195 kg CO₂/km avg', ph: 'e.g. 1' },
 ];
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { staggerChildren: 0.1 } }
+};
+const itemVariants = {
+  hidden: { opacity: 0, y: 15 },
+  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
+};
 
 const TransportScreen = ({ data, updateData, goBack, goNext }) => {
   const toggleMode = (id) => {
-    if (data[id] !== '') {
-      updateData(id, ''); // Deselect by clearing value
-    } else {
-      updateData(id, '0'); // Select by setting to '0'
-    }
+    if (data[id] !== '') updateData(id, ''); 
+    else updateData(id, '0');
   };
 
   const isActive = (id) => data[id] !== '';
 
   const renderSection = (title, icon, modeIds) => (
-    <div className="glass-panel" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
-      <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text2)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <span style={{ color: 'var(--green)' }}>{icon}</span> {title}
+    <motion.div variants={itemVariants} className="mb-8">
+      <div className="flex items-center gap-2 mb-4">
+        <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-white/5 border border-white/10 text-xl">{icon}</span>
+        <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">{title}</h3>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px' }}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {modeIds.map(id => {
           const m = modes.find(x => x.id === id);
+          const active = isActive(id);
           return (
-            <div key={id} className={`selectable-card ${isActive(id) ? 'active' : ''}`} onClick={() => toggleMode(id)}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ color: isActive(id) ? 'var(--green)' : 'var(--text2)' }}>{m.icon}</span>
-                <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: `1.5px solid ${isActive(id) ? 'var(--green)' : 'var(--glass-border-hover)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', background: isActive(id) ? 'var(--green)' : 'transparent', transition: 'all 0.2s' }}>
-                  {isActive(id) && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
+            <motion.div 
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              key={id} 
+              className={`relative overflow-hidden rounded-xl border transition-colors duration-300 cursor-pointer p-4 flex flex-col ${active ? 'bg-brand-green/10 border-brand-green shadow-[0_0_15px_rgba(74,222,128,0.15)]' : 'bg-black/20 border-white/5 hover:border-white/20'}`} 
+              onClick={() => toggleMode(id)}
+            >
+              {active && <motion.div layoutId={`activeIndicator-${id}`} className="absolute top-0 left-0 w-1 h-full bg-brand-green"></motion.div>}
+              <div className="flex items-center justify-between mb-3">
+                <span className={active ? 'text-brand-green' : 'text-muted-foreground'}>{m.icon}</span>
+                <div className={`flex items-center justify-center w-5 h-5 rounded-full border-2 transition-colors ${active ? 'border-brand-green bg-brand-green text-black' : 'border-white/20 bg-transparent'}`}>
+                  {active && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
                 </div>
               </div>
-              <div style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text)', marginTop: '8px' }}>{m.name}</div>
+              <div className="text-sm font-medium text-foreground">{m.name}</div>
               
-              {isActive(id) && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '12px' }} onClick={e => e.stopPropagation()}>
-                  <div style={{ fontSize: '11px', color: 'var(--text2)' }}>{m.label}</div>
-                  <input 
-                    type="number" 
-                    min="0" 
-                    placeholder={m.ph} 
-                    value={data[id] === '0' ? '' : data[id]} 
-                    onChange={e => updateData(id, e.target.value)}
-                  />
-                  <div style={{ fontSize: '11px', color: 'var(--text3)' }}>{m.unit}</div>
-                </div>
-              )}
-            </div>
+              <div className={`mt-4 flex flex-col gap-2 transition-all duration-300 origin-top ${active ? 'opacity-100 h-auto scale-y-100' : 'opacity-0 h-0 scale-y-0 overflow-hidden'}`} onClick={e => e.stopPropagation()}>
+                <label className="text-xs text-muted-foreground">{m.label}</label>
+                <input 
+                  type="number" 
+                  min="0" 
+                  placeholder={m.ph} 
+                  value={data[id] === '0' ? '' : data[id]} 
+                  onChange={e => updateData(id, e.target.value)}
+                  className="w-full bg-black/40 border border-white/10 rounded-md px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-brand-green focus:border-brand-green transition-all"
+                />
+                <div className="text-[10px] text-muted-foreground/80">{m.unit}</div>
+              </div>
+            </motion.div>
           );
         })}
       </div>
-    </div>
+    </motion.div>
   );
 
   return (
-    <div className="animate-fade-in" style={{ maxWidth: '800px', margin: '0 auto', padding: '3rem 2rem' }}>
-      <div style={{ marginBottom: '2.5rem' }}>
-        <div style={{ fontFamily: 'var(--mono)', fontSize: '12px', color: 'var(--green)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '12px' }}>step 1 of 3</div>
-        <h2 style={{ fontSize: '32px', fontWeight: 600, letterSpacing: '-0.02em', marginBottom: '8px' }}>how do you get around?</h2>
-        <p style={{ fontSize: '15px', color: 'var(--text2)', lineHeight: 1.6 }}>Select all transport modes you use regularly. Enter weekly distance for each.</p>
-      </div>
-
-      {renderSection('personal vehicles', '🚗', ['scooter', 'bicycle', 'carPetrol', 'carEv', 'truck'])}
-      {renderSection('public & shared transport', '🚌', ['bus', 'metro', 'railway'])}
-      {renderSection('air travel (per year)', '✈️', ['flightShort', 'flightLong'])}
-
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '3rem', paddingTop: '2rem', borderTop: '1px solid var(--glass-border)' }}>
-        <button className="btn-secondary" onClick={goBack} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><ArrowLeft size={16} /> back</button>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--green)', boxShadow: 'var(--shadow-glow)' }}></div>
-          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--bg4)' }}></div>
-          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--bg4)' }}></div>
+    <motion.div 
+      className="flex flex-col h-full overflow-y-auto pr-2 custom-scrollbar"
+      variants={containerVariants}
+      initial="hidden"
+      animate="show"
+    >
+      {/* Progress Header */}
+      <div className="mb-8 relative z-10 sticky top-0 bg-card/90 backdrop-blur-md pt-2 pb-4 z-20">
+        <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-widest text-muted-foreground mb-4">
+          <span>Step 2 of 5</span>
+          <span>Transport</span>
         </div>
-        <button className="btn-primary" onClick={goNext}>next: energy <ArrowRight size={16} /></button>
+        <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden shadow-inner">
+          <motion.div 
+            initial={{ width: "20%" }}
+            animate={{ width: "40%" }}
+            transition={{ duration: 1 }}
+            className="h-full bg-brand-green rounded-full shadow-[0_0_10px_rgba(74,222,128,0.5)]"
+          ></motion.div>
+        </div>
       </div>
-    </div>
+
+      <motion.div variants={itemVariants} className="mb-10">
+        <h2 className="text-[32px] sm:text-[40px] font-bold text-foreground leading-[1.1] mb-4 tracking-tight text-shadow-glow">How do you get around?</h2>
+        <p className="text-muted-foreground text-[16px] leading-relaxed">Select all transport modes you use regularly. Enter weekly distance for each.</p>
+      </motion.div>
+
+      {renderSection('Personal Vehicles', '🚗', ['scooter', 'bicycle', 'carPetrol', 'carEv', 'truck'])}
+      {renderSection('Public & Shared Transport', '🚌', ['bus', 'metro', 'railway'])}
+      {renderSection('Air Travel (Per Year)', '✈️', ['flightShort', 'flightLong'])}
+
+      <motion.div variants={itemVariants} className="pt-6 mt-8 border-t border-white/5 flex items-center justify-between sticky bottom-0 bg-card/90 backdrop-blur-md pb-2 z-20">
+        <button onClick={goBack} className="flex items-center gap-2 text-muted-foreground text-sm font-semibold px-4 py-2 rounded-full hover:bg-white/5 transition-colors focus-visible:outline-none">
+          <ArrowLeft size={16} /> Back
+        </button>
+        <button onClick={goNext} className="btn-magic group">
+          <span className="btn-magic-glow"></span>
+          <span className="btn-magic-inner gap-2 text-sm px-6">
+            Next: Energy <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
+          </span>
+        </button>
+      </motion.div>
+    </motion.div>
   );
 };
 

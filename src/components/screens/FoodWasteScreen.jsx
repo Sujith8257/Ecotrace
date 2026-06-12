@@ -1,108 +1,162 @@
 import React from 'react';
 import { ArrowLeft, ArrowRight, Salad, Trash2, ShoppingBag } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const dietOptions = [
-  { id: 'vegan', name: 'vegan', desc: 'no animal products', ef: 0.7 },
-  { id: 'plant-based', name: 'plant-based', desc: 'mostly plants, rare exceptions', ef: 1.0 },
-  { id: 'vegetarian', name: 'vegetarian', desc: 'no meat, yes dairy/eggs', ef: 1.3 },
-  { id: 'no-meat-fish', name: 'no red meat/fish', desc: 'poultry only', ef: 1.5 },
-  { id: 'mixed', name: 'mixed', desc: 'a bit of everything', ef: 2.0 },
-  { id: 'meat-heavy', name: 'meat most days', desc: 'red meat regularly', ef: 3.3 },
+  { id: 'vegan', name: 'Vegan', desc: 'No animal products', ef: 0.7 },
+  { id: 'plant-based', name: 'Plant-based', desc: 'Mostly plants, rare exceptions', ef: 1.0 },
+  { id: 'vegetarian', name: 'Vegetarian', desc: 'No meat, yes dairy/eggs', ef: 1.3 },
+  { id: 'no-meat-fish', name: 'No red meat/fish', desc: 'Poultry only', ef: 1.5 },
+  { id: 'mixed', name: 'Mixed', desc: 'A bit of everything', ef: 2.0 },
+  { id: 'meat-heavy', name: 'Meat most days', desc: 'Red meat regularly', ef: 3.3 },
 ];
 
 const wasteOptions = [
-  { id: 'low', name: 'low', desc: 'reuse, sort, compost', ef: 0.1 },
-  { id: 'average', name: 'average', desc: 'some sorting & reuse', ef: 0.5 },
-  { id: 'high', name: 'high', desc: 'frequent disposables', ef: 1.2 },
+  { id: 'low', name: 'Low', desc: 'Reuse, sort, compost', ef: 0.1 },
+  { id: 'average', name: 'Average', desc: 'Some sorting & reuse', ef: 0.5 },
+  { id: 'high', name: 'High', desc: 'Frequent disposables', ef: 1.2 },
 ];
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { staggerChildren: 0.1 } }
+};
+const itemVariants = {
+  hidden: { opacity: 0, y: 15 },
+  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
+};
 
 const FoodWasteScreen = ({ data, updateData, goBack, calculate }) => {
   return (
-    <div className="animate-fade-in" style={{ maxWidth: '800px', margin: '0 auto', padding: '3rem 2rem' }}>
-      <div style={{ marginBottom: '2.5rem' }}>
-        <div style={{ fontFamily: 'var(--mono)', fontSize: '12px', color: 'var(--green)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '12px' }}>step 3 of 3</div>
-        <h2 style={{ fontSize: '32px', fontWeight: 600, letterSpacing: '-0.02em', marginBottom: '8px' }}>food & waste habits</h2>
-        <p style={{ fontSize: '15px', color: 'var(--text2)', lineHeight: 1.6 }}>These use broad behaviour bands. Your result will show the range and explain the assumptions.</p>
-      </div>
-
-      <div className="glass-panel" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
-        <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text2)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ color: 'var(--green)' }}><Salad size={18} /></span> diet
+    <motion.div 
+      className="flex flex-col h-full overflow-y-auto pr-2 custom-scrollbar"
+      variants={containerVariants}
+      initial="hidden"
+      animate="show"
+    >
+      {/* Progress Header */}
+      <div className="mb-8 relative z-10 sticky top-0 bg-card/90 backdrop-blur-md pt-2 pb-4 z-20">
+        <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-widest text-muted-foreground mb-4">
+          <span>Step 4 of 5</span>
+          <span>Food & Waste</span>
         </div>
-        <p style={{ fontSize: '14px', color: 'var(--text3)', marginBottom: '1.5rem' }}>which best matches what you eat most days?</p>
-        
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '10px' }}>
-          {dietOptions.map(opt => (
-            <div 
-              key={opt.id} 
-              className={`selectable-card ${data.diet === opt.id ? 'active' : ''}`}
-              onClick={() => updateData('diet', opt.id)}
-            >
-              <div style={{ fontSize: '14px', fontWeight: 500 }}>{opt.name}</div>
-              <div style={{ fontSize: '12px', color: data.diet === opt.id ? 'var(--green)' : 'var(--text3)', marginTop: '4px', opacity: data.diet === opt.id ? 0.8 : 1 }}>{opt.desc}</div>
-            </div>
-          ))}
+        <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden shadow-inner">
+          <motion.div 
+            initial={{ width: "60%" }}
+            animate={{ width: "80%" }}
+            transition={{ duration: 1 }}
+            className="h-full bg-brand-green rounded-full shadow-[0_0_10px_rgba(74,222,128,0.5)]"
+          ></motion.div>
         </div>
       </div>
 
-      <div className="glass-panel" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
-        <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text2)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ color: 'var(--text3)' }}><Trash2 size={18} /></span> household waste
-        </div>
-        <p style={{ fontSize: '14px', color: 'var(--text3)', marginBottom: '1.5rem' }}>how would you describe your waste habits?</p>
-        
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '10px' }}>
-          {wasteOptions.map(opt => (
-            <div 
-              key={opt.id} 
-              className={`selectable-card ${data.waste === opt.id ? 'active' : ''}`}
-              onClick={() => updateData('waste', opt.id)}
-            >
-              <div style={{ fontSize: '14px', fontWeight: 500 }}>{opt.name}</div>
-              <div style={{ fontSize: '12px', color: data.waste === opt.id ? 'var(--green)' : 'var(--text3)', marginTop: '4px', opacity: data.waste === opt.id ? 0.8 : 1 }}>{opt.desc}</div>
-            </div>
-          ))}
-        </div>
-      </div>
+      <motion.div variants={itemVariants} className="mb-10">
+        <h2 className="text-[32px] sm:text-[40px] font-bold text-foreground leading-[1.1] mb-4 tracking-tight text-shadow-glow">Food & waste habits</h2>
+        <p className="text-muted-foreground text-[16px] leading-relaxed">These use broad behaviour bands. Your result will show the range and assumptions.</p>
+      </motion.div>
 
-      <div className="glass-panel" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
-        <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text2)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ color: 'var(--purple)' }}><ShoppingBag size={18} /></span> shopping & consumption
+      <motion.div variants={itemVariants} className="mb-8">
+        <div className="flex items-center gap-3 mb-5">
+          <span className="flex items-center justify-center w-10 h-10 rounded-xl bg-brand-green/10 border border-brand-green/20 text-brand-green"><Salad size={20} /></span>
+          <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Diet</h3>
         </div>
+        <p className="text-sm text-muted-foreground mb-4">Which best matches what you eat most days?</p>
         
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '1.5rem' }}>
-          <div style={{ fontSize: '14px', color: 'var(--text)' }}>monthly spend on new clothing & electronics</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ width: '180px' }}>
-              <input type="number" min="0" placeholder="e.g. 2000" value={data.shoppingSpend} onChange={e => updateData('shoppingSpend', e.target.value)} />
-            </div>
-            <span style={{ fontSize: '14px', color: 'var(--text3)' }}>₹ / month</span>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {dietOptions.map(opt => {
+            const active = data.diet === opt.id;
+            return (
+              <motion.div 
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                key={opt.id} 
+                className={`p-4 rounded-xl border cursor-pointer transition-colors duration-200 ${active ? 'bg-brand-green/10 border-brand-green shadow-[0_0_10px_rgba(74,222,128,0.15)]' : 'bg-black/20 border-white/5 hover:border-white/20'}`}
+                onClick={() => updateData('diet', opt.id)}
+              >
+                <div className={`font-medium text-sm ${active ? 'text-brand-green' : 'text-foreground/90'}`}>{opt.name}</div>
+                <div className={`text-xs mt-1 ${active ? 'text-brand-green/80' : 'text-muted-foreground'}`}>{opt.desc}</div>
+              </motion.div>
+            );
+          })}
+        </div>
+      </motion.div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <motion.div variants={itemVariants} className="flex flex-col">
+          <div className="flex items-center gap-3 mb-5">
+            <span className="flex items-center justify-center w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-500"><Trash2 size={20} /></span>
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Household Waste</h3>
           </div>
-          <div style={{ fontSize: '12px', color: 'var(--text3)', marginTop: '4px' }}>approx ₹1000 → ~0.04 tCO₂e/yr from manufacturing</div>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 0', borderTop: '1px solid var(--glass-border-hover)' }}>
-          <div>
-            <div style={{ fontSize: '15px', fontWeight: 500 }}>buy second-hand / refurbished often</div>
-            <div style={{ fontSize: '13px', color: 'var(--text3)', marginTop: '2px' }}>reduces shopping footprint by ~40%</div>
+          <p className="text-sm text-muted-foreground mb-4">How would you describe your waste habits?</p>
+          
+          <div className="flex flex-col gap-3 flex-1">
+            {wasteOptions.map(opt => {
+              const active = data.waste === opt.id;
+              return (
+                <motion.div 
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  key={opt.id} 
+                  className={`p-3.5 rounded-xl border flex items-center justify-between cursor-pointer transition-colors duration-200 ${active ? 'bg-blue-500/10 border-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.15)]' : 'bg-black/20 border-white/5 hover:border-white/20'}`}
+                  onClick={() => updateData('waste', opt.id)}
+                >
+                  <div>
+                    <div className={`font-medium text-sm ${active ? 'text-blue-400' : 'text-foreground/90'}`}>{opt.name}</div>
+                    <div className={`text-[11px] mt-0.5 ${active ? 'text-blue-400/80' : 'text-muted-foreground'}`}>{opt.desc}</div>
+                  </div>
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${active ? 'border-blue-500 bg-blue-500' : 'border-white/10'}`}>
+                    {active && <motion.div layoutId="wasteActive" className="w-2 h-2 bg-black rounded-full"></motion.div>}
+                  </div>
+                </motion.div>
+              );
+            })}
           </div>
-          <label className="toggle-switch">
-            <input type="checkbox" checked={data.secondhandToggle} onChange={e => updateData('secondhandToggle', e.target.checked)} />
-            <span className="toggle-slider"></span>
-          </label>
-        </div>
+        </motion.div>
+
+        <motion.div variants={itemVariants} className="flex flex-col">
+          <div className="flex items-center gap-3 mb-5">
+            <span className="flex items-center justify-center w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-500"><ShoppingBag size={20} /></span>
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Shopping</h3>
+          </div>
+          
+          <div className="mb-4 p-5 rounded-xl border border-white/5 bg-black/20">
+            <label className="block text-sm font-medium text-foreground mb-3">Monthly spend on new clothing & electronics</label>
+            <div className="relative mb-2">
+              <input type="number" min="0" placeholder="e.g. 2000" value={data.shoppingSpend} onChange={e => updateData('shoppingSpend', e.target.value)} className="w-full bg-background border border-white/10 rounded-lg pl-4 pr-16 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 transition-all shadow-sm" />
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-muted-foreground font-medium">₹/mo</span>
+            </div>
+            <p className="text-[11px] text-muted-foreground">approx ₹1000 → ~0.04 tCO₂e/yr from manufacturing</p>
+          </div>
+
+          <motion.div 
+            whileHover={{ backgroundColor: "rgba(255,255,255,0.05)" }}
+            className="flex items-center justify-between p-3.5 rounded-xl border border-white/5 bg-black/20 cursor-pointer hover:border-white/10 transition-colors"
+            onClick={() => updateData('secondhandToggle', !data.secondhandToggle)}
+          >
+            <div>
+              <div className="text-sm font-medium text-foreground">Buy second-hand / refurbished</div>
+              <div className="text-[11px] text-muted-foreground mt-0.5">Reduces shopping footprint by ~40%</div>
+            </div>
+            <label className="relative inline-flex items-center pointer-events-none">
+              <input type="checkbox" className="sr-only peer" checked={data.secondhandToggle} readOnly />
+              <div className="w-9 h-5 bg-white/10 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-500 shadow-inner"></div>
+            </label>
+          </motion.div>
+        </motion.div>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '3rem', paddingTop: '2rem', borderTop: '1px solid var(--glass-border)' }}>
-        <button className="btn-secondary" onClick={goBack} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><ArrowLeft size={16} /> back</button>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--green3)' }}></div>
-          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--green3)' }}></div>
-          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--green)', boxShadow: 'var(--shadow-glow)' }}></div>
-        </div>
-        <button className="btn-primary" onClick={calculate}>see my results <ArrowRight size={16} /></button>
-      </div>
-    </div>
+      <motion.div variants={itemVariants} className="pt-6 mt-auto border-t border-white/5 flex items-center justify-between sticky bottom-0 bg-card/90 backdrop-blur-md pb-2 z-20">
+        <button onClick={goBack} className="flex items-center gap-2 text-muted-foreground text-sm font-semibold px-4 py-2 rounded-full hover:bg-white/5 transition-colors focus-visible:outline-none">
+          <ArrowLeft size={16} /> Back
+        </button>
+        <button onClick={calculate} className="btn-magic group">
+          <span className="btn-magic-glow"></span>
+          <span className="btn-magic-inner gap-2 text-sm px-6">
+            Next: Review <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
+          </span>
+        </button>
+      </motion.div>
+    </motion.div>
   );
 };
 
