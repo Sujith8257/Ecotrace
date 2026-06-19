@@ -39,6 +39,7 @@ const DashboardScreen = ({ data, goHome, recalculate }) => {
   const [saveState, setSaveState] = useState('idle');
   const [saveMessage, setSaveMessage] = useState('');
   const [autoSavedKey, setAutoSavedKey] = useState('');
+  const [currentEstimateId, setCurrentEstimateId] = useState(null);
   const autoSavingKeyRef = useRef('');
 
   useEffect(() => {
@@ -67,7 +68,7 @@ const DashboardScreen = ({ data, goHome, recalculate }) => {
     if (!user || !footprintData || !isSupabaseConfigured) return;
 
     const totalNum = Number.parseFloat(footprintData.total);
-    const key = `${user.uid}:${footprintData.total}:${JSON.stringify(footprintData.breakdown)}`;
+    const key = `${user.uid}:${footprintData.total}:${JSON.stringify(selectedActions)}`;
     if (autoSavedKey === key || autoSavingKeyRef.current === key) return;
     autoSavingKeyRef.current = key;
 
@@ -78,21 +79,23 @@ const DashboardScreen = ({ data, goHome, recalculate }) => {
         ...footprintData,
         healthScore: getHealthScore(totalNum),
         scoreBand: getScoreBand(getHealthScore(totalNum)),
+        estimateId: currentEstimateId,
       },
-      selectedActions: [],
+      selectedActions: selectedActions,
     })
-      .then(() => {
+      .then((savedEstimate) => {
         setAutoSavedKey(key);
+        if (savedEstimate?.id) setCurrentEstimateId(savedEstimate.id);
         setSaveState('saved');
-        setSaveMessage('Estimate saved to Supabase.');
+        setSaveMessage('Progress saved automatically.');
       })
       .catch((err) => {
         console.error('Auto-saving estimate failed:', err);
         autoSavingKeyRef.current = '';
         setSaveState('error');
-        setSaveMessage(`Could not auto-save estimate: ${err.message}`);
+        setSaveMessage(`Could not auto-save: ${err.message}`);
       });
-  }, [autoSavedKey, data, footprintData, user]);
+  }, [autoSavedKey, data, footprintData, user, selectedActions, currentEstimateId]);
 
   const toggleAction = (id) => {
     if (selectedActions.includes(id)) {
@@ -404,18 +407,21 @@ const DashboardScreen = ({ data, goHome, recalculate }) => {
             <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-1">Compare & Save</div>
             <h3 className="text-lg font-bold text-foreground mb-3">Where do you rank?</h3>
             <p className="text-sm text-muted-foreground leading-relaxed mb-6">
-              Firebase handles Google sign-in. Supabase stores your saved footprint estimates.
+              Firebase handles Google sign-in. Your progress and selected actions are saved automatically.
             </p>
-            <button
-              onClick={handleSaveEstimate}
-              disabled={saveState === 'saving'}
-              className="w-full py-3 rounded-xl bg-secondary border border-border hover:border-brand-green/30 transition-colors flex items-center justify-center gap-2 text-sm font-medium text-foreground"
-            >
-              {user ? <Save size={16} /> : <User size={16} />}
-              {saveState === 'saving' ? 'Saving...' : user ? 'Save estimate' : 'Sign in to save'}
-            </button>
+            {!user && (
+              <button
+                onClick={handleSaveEstimate}
+                disabled={saveState === 'saving'}
+                className="w-full py-3 rounded-xl bg-secondary border border-border hover:border-brand-green/30 transition-colors flex items-center justify-center gap-2 text-sm font-medium text-foreground"
+              >
+                <User size={16} />
+                Sign in to save automatically
+              </button>
+            )}
             {saveMessage && (
               <p className={`mt-3 text-xs ${saveState === 'error' ? 'text-red-500' : 'text-muted-foreground'}`}>
+                {saveState === 'saved' && <Check size={12} className="inline mr-1 text-brand-green" />}
                 {saveMessage}
               </p>
             )}

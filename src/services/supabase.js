@@ -37,16 +37,22 @@ export const saveFootprintEstimate = async ({ firebaseUser, answers, result, sel
     throw new Error(`Supabase profile upsert failed: ${profileError.message}`);
   }
 
-  // 2. Insert Footprint Estimate
+  // 2. Insert or Update Footprint Estimate
+  const estimateData = {
+    firebase_uid: firebaseUser.uid,
+    answers,
+    result,
+    selected_actions: selectedActions || [],
+    total_kg_co2e_month: Number.parseFloat(result?.total || '0'),
+  };
+  
+  if (result?.estimateId) {
+    estimateData.id = result.estimateId;
+  }
+
   const { data: estimate, error: estimateError } = await supabase
     .from('footprint_estimates')
-    .insert({
-      firebase_uid: firebaseUser.uid,
-      answers,
-      result,
-      selected_actions: selectedActions || [],
-      total_kg_co2e_month: Number.parseFloat(result?.total || '0'),
-    })
+    .upsert(estimateData, { onConflict: 'id' })
     .select()
     .single();
 
