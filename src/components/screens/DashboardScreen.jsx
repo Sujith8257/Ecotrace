@@ -90,7 +90,7 @@ const DashboardScreen = ({ data, goHome, recalculate }) => {
         console.error('Auto-saving estimate failed:', err);
         autoSavingKeyRef.current = '';
         setSaveState('error');
-        setSaveMessage('Could not auto-save estimate. Check the Supabase function deployment.');
+        setSaveMessage(`Could not auto-save estimate: ${err.message}`);
       });
   }, [autoSavedKey, data, footprintData, user]);
 
@@ -137,7 +137,7 @@ const DashboardScreen = ({ data, goHome, recalculate }) => {
     } catch (err) {
       console.error('Saving estimate failed:', err);
       setSaveState('error');
-      setSaveMessage('Could not save estimate. Check Supabase tables and policies.');
+      setSaveMessage(`Could not save estimate: ${err.message}`);
     }
   };
 
@@ -391,6 +391,12 @@ const DashboardScreen = ({ data, goHome, recalculate }) => {
             <p className="text-xs text-muted-foreground leading-relaxed">
               Your score is <span className="font-semibold text-foreground">{scoreBand}</span>. It compares your estimate with a 2 tCO2e annual lifestyle target.
             </p>
+            <div className="bg-secondary p-3 mt-4 rounded-lg text-[11px] text-muted-foreground border border-border">
+              <strong>How it's calculated:</strong> 2,000 kg / 12 months = 166.67 kg/mo target.<br/>
+              {healthScore === 100 
+                ? "Your footprint is under the target limit, giving you a perfect score!"
+                : `Score = (166.67 / ${totalNum}) × 100 = ${healthScore}`}
+            </div>
           </motion.div>
 
           {/* Compare Card */}
