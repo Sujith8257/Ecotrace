@@ -224,9 +224,9 @@ export async function chatWithTrace(messages, footprintData) {
 
   const systemPrompt = `You are Trace, a friendly, concise, and highly knowledgeable climate action coach for Ecotrace AI.
 The user just completed their carbon footprint assessment.
-Their total footprint is ${footprintData.total} kg CO2e / month.
-Their biggest emission category is: ${footprintData.biggest}.
-The detailed breakdown: ${JSON.stringify(footprintData.breakdown)}.
+Their total footprint is ${footprintData?.total || 'unknown'} kg CO2e / month.
+Their biggest emission category is: ${footprintData?.biggest || 'unknown'}.
+The detailed breakdown: ${footprintData?.breakdown ? JSON.stringify(footprintData.breakdown) : 'unknown'}.
 
 Guidelines:
 - Keep answers short and actionable (1-3 paragraphs max).

@@ -34,7 +34,7 @@ export const saveFootprintEstimate = async ({ firebaseUser, answers, result, sel
 
   if (profileError) {
     console.error("Error saving profile:", profileError);
-    throw new Error("Could not save user profile to Supabase.");
+    throw new Error(`Supabase profile upsert failed: ${profileError.message}`);
   }
 
   // 2. Insert Footprint Estimate
@@ -52,7 +52,7 @@ export const saveFootprintEstimate = async ({ firebaseUser, answers, result, sel
 
   if (estimateError) {
     console.error("Error saving estimate:", estimateError);
-    throw new Error("Could not save footprint estimate to Supabase.");
+    throw new Error(`Supabase estimate insert failed: ${estimateError.message}`);
   }
 
   return estimate;
@@ -63,7 +63,7 @@ export const getFootprintHistory = async (firebaseUser) => {
 
   const { data, error } = await supabase
     .from('footprint_estimates')
-    .select('id, result, selected_actions, total_kg_co2e_month, created_at')
+    .select('id, answers, result, selected_actions, total_kg_co2e_month, created_at')
     .eq('firebase_uid', firebaseUser.uid)
     .order('created_at', { ascending: false })
     .limit(20);
