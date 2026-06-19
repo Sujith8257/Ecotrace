@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Send, Leaf, Sparkles, MessageCircle } from 'lucide-react';
+import { X, Send, Leaf, Sparkles, MessageCircle, RefreshCw } from 'lucide-react';
 import { chatWithTrace } from '../services/aiService';
 
 export default function ChatAssistant({ isOpen, onClose, footprintData }) {
@@ -15,6 +15,18 @@ export default function ChatAssistant({ isOpen, onClose, footprintData }) {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  const [showSuggestions, setShowSuggestions] = useState(true);
+  const suggestions = footprintData ? [
+    `Why is ${footprintData.biggest} my biggest source?`,
+    "What's the easiest way to improve?",
+    "Explain my health score"
+  ] : [];
+
+  const handleSuggestionClick = (suggestion) => {
+    setInput(suggestion);
+    setShowSuggestions(false);
+  };
+
   useEffect(() => {
     if (isOpen) {
       scrollToBottom();
@@ -22,8 +34,10 @@ export default function ChatAssistant({ isOpen, onClose, footprintData }) {
   }, [messages, isOpen]);
 
   const handleSend = async (e) => {
-    e.preventDefault();
+    if (e?.preventDefault) e.preventDefault();
     if (!input.trim() || isLoading) return;
+
+    setShowSuggestions(false);
 
     const userMessage = { role: 'user', content: input.trim() };
     const newMessages = [...messages, userMessage];
@@ -44,6 +58,20 @@ export default function ChatAssistant({ isOpen, onClose, footprintData }) {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const clearChat = () => {
+    setMessages([{ role: 'assistant', content: "Hi! I'm Trace, your climate coach. I see your monthly footprint is estimated at **" + footprintData?.total + " kg CO2e**. What would you like to know about reducing your emissions?" }]);
+    setShowSuggestions(true);
+  };
+
+  const renderMarkdown = (text) => {
+    let html = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); // Bold
+    html = html.replace(/\*(.*?)\*/g, '<em>$1</em>'); // Italics
+    html = html.replace(/\n\n/g, '<br/><br/>'); // Paragraph breaks
+    html = html.replace(/\n- (.*?)(?=\n|$)/g, '<li class="ml-4 list-disc">$1</li>'); // Bullet points
+    html = html.replace(/\n\d+\. (.*?)(?=\n|$)/g, '<li class="ml-4 list-decimal">$1</li>'); // Numbered lists
+    return html;
   };
 
   return (
@@ -67,12 +95,22 @@ export default function ChatAssistant({ isOpen, onClose, footprintData }) {
                 <p className="text-[10px] text-white/80 uppercase tracking-wider font-semibold">Climate Coach</p>
               </div>
             </div>
-            <button 
-              onClick={onClose}
-              className="w-8 h-8 rounded-full hover:bg-white/20 flex items-center justify-center transition-colors"
-            >
-              <X size={18} />
-            </button>
+            <div className="flex items-center gap-1">
+              <button 
+                onClick={clearChat}
+                className="w-8 h-8 rounded-full hover:bg-white/20 flex items-center justify-center transition-colors text-white/80 hover:text-white"
+                title="Clear chat"
+              >
+                <RefreshCw size={14} />
+              </button>
+              <button 
+                onClick={onClose}
+                className="w-8 h-8 rounded-full hover:bg-white/20 flex items-center justify-center transition-colors"
+                title="Close chat"
+              >
+                <X size={18} />
+              </button>
+            </div>
           </div>
 
           {/* Messages */}
@@ -87,8 +125,8 @@ export default function ChatAssistant({ isOpen, onClose, footprintData }) {
                   {msg.role === 'assistant' && idx === 0 && (
                     <Sparkles size={14} className="text-brand-green inline mr-2 -mt-0.5" />
                   )}
-                  {/* Basic markdown parsing for bold text */}
-                  <span dangerouslySetInnerHTML={{ __html: msg.content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br/>') }} />
+                  {/* Improved markdown parsing */}
+                  <span dangerouslySetInnerHTML={{ __html: renderMarkdown(msg.content) }} />
                 </div>
               </div>
             ))}
@@ -107,9 +145,23 @@ export default function ChatAssistant({ isOpen, onClose, footprintData }) {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Input Area */}
-          <div className="p-3 bg-white border-t border-border shrink-0">
-            <form onSubmit={handleSend} className="flex gap-2">
+          {/* Input Area & Suggestions */}
+          <div className="bg-white border-t border-border shrink-0 flex flex-col">
+            {showSuggestions && suggestions.length > 0 && (
+              <div className="flex gap-2 p-3 pb-0 overflow-x-auto custom-scrollbar">
+                {suggestions.map((s, i) => (
+                  <button
+                    key={i}
+                    onClick={() => handleSuggestionClick(s)}
+                    className="whitespace-nowrap px-3 py-1.5 rounded-full bg-secondary border border-border text-xs text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            )}
+            <div className="p-3">
+              <form onSubmit={handleSend} className="flex gap-2">
               <input
                 type="text"
                 value={input}
@@ -126,6 +178,7 @@ export default function ChatAssistant({ isOpen, onClose, footprintData }) {
                 <Send size={16} className="ml-0.5" />
               </button>
             </form>
+            </div>
           </div>
         </motion.div>
       )}
