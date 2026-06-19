@@ -3,6 +3,7 @@ import { Leaf, ArrowRight, RefreshCw, Car, Zap, Salad, Trash2, Info, User, Check
 import { motion } from 'framer-motion';
 import { calculateFootprintWithAI } from '../../services/aiService';
 import CalculationJourney from '../CalculationJourney';
+import ChatAssistant from '../ChatAssistant';
 import { signInWithGoogle, subscribeToAuth } from '../../services/firebase';
 import { isSupabaseConfigured, saveFootprintEstimate } from '../../services/supabase';
 
@@ -30,6 +31,7 @@ const getScoreBand = (healthScore) => {
 
 const DashboardScreen = ({ data, goHome, recalculate }) => {
   const [selectedActions, setSelectedActions] = useState([]);
+  const [isChatOpen, setIsChatOpen] = useState(false);
   const [footprintData, setFootprintData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -471,10 +473,19 @@ const DashboardScreen = ({ data, goHome, recalculate }) => {
 
       {/* Sticky Coach Button */}
       <div className="fixed bottom-6 right-6 z-50">
-        <button className="flex items-center gap-2 px-5 py-3 rounded-full bg-brand-green hover:bg-brand-green/90 text-white font-bold shadow-[0_0_20px_rgba(31,157,85,0.28)] transition-transform hover:scale-105 active:scale-95">
+        <button 
+          onClick={() => setIsChatOpen(true)}
+          className={`flex items-center gap-2 px-5 py-3 rounded-full bg-brand-green hover:bg-brand-green/90 text-white font-bold shadow-[0_0_20px_rgba(31,157,85,0.28)] transition-transform ${isChatOpen ? 'scale-0' : 'hover:scale-105 active:scale-95'}`}
+        >
           <MessageCircle size={18} /> Chat with Trace
         </button>
       </div>
+
+      <ChatAssistant 
+        isOpen={isChatOpen} 
+        onClose={() => setIsChatOpen(false)} 
+        footprintData={footprintData} 
+      />
 
     </div>
   );

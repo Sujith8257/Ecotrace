@@ -213,3 +213,65 @@ export async function calculateFootprintWithAI(userData) {
   console.warn("All AI fallbacks failed. Using deterministic calculator.");
   return calculateFootprint(userData);
 }
+
+export async function chatWithTrace(messages, footprintData) {
+  const rawKeys = import.meta.env.VITE_AI_API_KEYS || '';
+  const apiKeys = rawKeys.split(',').map(k => k.trim()).filter(Boolean);
+
+  if (apiKeys.length === 0) {
+    throw new Error("No AI API keys configured for chat.");
+  }
+
+  const systemPrompt = `You are Trace, a friendly, concise, and highly knowledgeable climate action coach for Ecotrace AI.
+The user just completed their carbon footprint assessment.
+Their total footprint is ${footprintData.total} kg CO2e / month.
+Their biggest emission category is: ${footprintData.biggest}.
+The detailed breakdown: ${JSON.stringify(footprintData.breakdown)}.
+
+Guidelines:
+- Keep answers short and actionable (1-3 paragraphs max).
+- Speak directly to the user. Do not use robotic phrasing.
+- If asked about their specific footprint, reference their data directly.
+- Use markdown formatting for readability.`;
+
+  const apiMessages = [
+    { role: 'system', content: systemPrompt },
+    ...messages
+  ];
+
+  for (const key of apiKeys) {
+    for (const model of FALLBACK_MODELS) {
+      try {
+        console.log(`Attempting Chat AI inference with key ${key.slice(0,4)}... and model ${model}`);
+        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${key}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            model: model,
+            messages: apiMessages,
+            // No response_format here since we want standard text, not JSON
+          })
+        });
+
+        if (response.status === 429) {
+          console.warn(`Chat rate limited on ${model} with key ${key.slice(0,4)}...`);
+          continue;
+        }
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        return data.choices[0].message.content;
+      } catch (e) {
+        console.error(`Chat AI inference failed for ${model}:`, e.message);
+      }
+    }
+  }
+
+  throw new Error("I'm experiencing heavy server load right now and couldn't process your message. Please try again in a moment!");
+}
