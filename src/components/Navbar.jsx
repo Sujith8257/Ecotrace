@@ -19,7 +19,7 @@ const getInitial = (user) => {
   return source.trim().charAt(0).toUpperCase();
 };
 
-const Navbar = ({ currentScreen, setCurrentScreen }) => {
+const Navbar = ({ currentScreen, setCurrentScreen, loadHistoryItem }) => {
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [authBusy, setAuthBusy] = useState(false);
@@ -232,7 +232,14 @@ const Navbar = ({ currentScreen, setCurrentScreen }) => {
                 {historyItems.map((item) => {
                   const score = item.result?.healthScore || item.result?.score;
                   return (
-                    <div key={item.id} className="rounded-2xl bg-white p-4 shadow-sm">
+                    <div 
+                      key={item.id} 
+                      className="rounded-2xl bg-white p-4 shadow-sm cursor-pointer hover:border-brand-green border border-transparent transition-colors"
+                      onClick={() => {
+                        loadHistoryItem(item);
+                        setHistoryOpen(false);
+                      }}
+                    >
                       <div className="flex items-start justify-between gap-4">
                         <div>
                           <div className="flex flex-wrap items-center gap-2">

@@ -112,13 +112,18 @@ function App() {
     }
   };
 
+  const loadHistoryItem = (item) => {
+    setData(item.answers);
+    setCurrentScreen(5);
+  };
+
   return (
     <div className="app-shell min-h-screen relative overflow-hidden bg-background transition-colors duration-500">
       <div className="absolute left-1/2 top-0 h-px w-[min(960px,90vw)] -translate-x-1/2 bg-gradient-to-r from-transparent via-brand-green/50 to-transparent pointer-events-none" />
       <div className="absolute -top-40 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full bg-brand-green/10 blur-3xl pointer-events-none" />
 
       <div className="relative z-10 flex flex-col min-h-screen">
-        <Navbar currentScreen={currentScreen} setCurrentScreen={setCurrentScreen} />
+        <Navbar currentScreen={currentScreen} setCurrentScreen={setCurrentScreen} loadHistoryItem={loadHistoryItem} />
         
         <main className="flex-1 flex flex-col">
           {currentScreen === 0 ? (
