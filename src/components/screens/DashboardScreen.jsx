@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Leaf, ArrowRight, RefreshCw, Car, Zap, Salad, Trash2, Info, User, Check, Sparkles, MessageCircle, AlertTriangle, Save } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { calculateFootprint } from '../../services/aiService';
+import { calculateFootprintWithAI } from '../../services/aiService';
 import CalculationJourney from '../CalculationJourney';
 import { signInWithGoogle, subscribeToAuth } from '../../services/firebase';
 import { isSupabaseConfigured, saveFootprintEstimate } from '../../services/supabase';
@@ -44,7 +44,7 @@ const DashboardScreen = ({ data, goHome, recalculate }) => {
       try {
         setIsLoading(true);
         setError(null);
-        const result = await calculateFootprint(data);
+        const result = await calculateFootprintWithAI(data);
         setFootprintData(result);
       } catch (err) {
         console.error("Footprint calculation failed:", err);
