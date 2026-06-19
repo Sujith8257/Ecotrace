@@ -1,4 +1,3 @@
-import React from 'react';
 import { ArrowLeft, ArrowRight, Zap, Flame, Home, Sun } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -25,7 +24,7 @@ const EnergyScreen = ({ data, updateData, goBack, goNext }) => {
           <span>Step 3 of 5</span>
           <span>Energy</span>
         </div>
-        <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden shadow-inner">
+        <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden shadow-inner">
           <motion.div 
             initial={{ width: "40%" }}
             animate={{ width: "60%" }}
@@ -46,11 +45,11 @@ const EnergyScreen = ({ data, updateData, goBack, goNext }) => {
           <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Electricity</h3>
         </div>
         
-        <div className="mb-6 p-5 rounded-xl border border-white/5 bg-black/20">
+        <div className="mb-6 p-5 rounded-xl border border-border bg-white/85 shadow-sm">
           <label className="block text-sm font-medium text-foreground mb-3">Monthly electricity bill (units / kWh)</label>
           <div className="flex flex-col sm:flex-row sm:items-center gap-4">
             <div className="relative flex-1 max-w-xs">
-              <input type="number" min="0" placeholder="e.g. 200" value={data.elecKwh} onChange={e => updateData('elecKwh', e.target.value)} className="w-full bg-background border border-white/10 rounded-lg pl-4 pr-16 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-brand-green focus:border-brand-green transition-all shadow-sm" />
+              <input type="number" min="0" placeholder="e.g. 200" value={data.elecKwh} onChange={e => updateData('elecKwh', e.target.value)} className="w-full bg-white border border-border rounded-lg pl-4 pr-16 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-brand-green focus:border-brand-green transition-all shadow-sm" />
               <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-muted-foreground font-medium">kWh</span>
             </div>
             <div className="text-xs text-muted-foreground flex items-center gap-2">
@@ -62,7 +61,7 @@ const EnergyScreen = ({ data, updateData, goBack, goNext }) => {
         <motion.div 
           whileHover={{ scale: 1.01 }}
           whileTap={{ scale: 0.99 }}
-          className="flex items-center justify-between p-4 rounded-xl border border-white/5 bg-black/20 hover:border-white/10 transition-colors cursor-pointer"
+          className="flex items-center justify-between p-4 rounded-xl border border-border bg-white/85 hover:border-brand-green/30 transition-colors cursor-pointer shadow-sm"
           onClick={() => updateData('hasSolar', !data.hasSolar)}
         >
           <div className="flex gap-4 items-center">
@@ -74,7 +73,7 @@ const EnergyScreen = ({ data, updateData, goBack, goNext }) => {
           </div>
           <label className="relative inline-flex items-center cursor-pointer pointer-events-none">
             <input type="checkbox" className="sr-only peer" checked={data.hasSolar} readOnly />
-            <div className="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-green shadow-inner"></div>
+            <div className="w-11 h-6 bg-secondary peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-green shadow-inner"></div>
           </label>
         </motion.div>
 
@@ -90,14 +89,14 @@ const EnergyScreen = ({ data, updateData, goBack, goNext }) => {
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-2">Panel capacity</label>
                   <div className="relative">
-                    <input type="number" min="0" placeholder="e.g. 3" value={data.solarKw} onChange={e => updateData('solarKw', e.target.value)} className="w-full bg-background border border-white/10 rounded-lg pl-4 pr-16 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 transition-all shadow-sm" />
+                    <input type="number" min="0" placeholder="e.g. 3" value={data.solarKw} onChange={e => updateData('solarKw', e.target.value)} className="w-full bg-white border border-border rounded-lg pl-4 pr-16 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 transition-all shadow-sm" />
                     <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-muted-foreground font-medium">kWp</span>
                   </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-2">Sunshine hours</label>
                   <div className="relative">
-                    <input type="number" min="0" step="0.5" placeholder="5.5" value={data.solarHours} onChange={e => updateData('solarHours', e.target.value)} className="w-full bg-background border border-white/10 rounded-lg pl-4 pr-20 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 transition-all shadow-sm" />
+                    <input type="number" min="0" step="0.5" placeholder="5.5" value={data.solarHours} onChange={e => updateData('solarHours', e.target.value)} className="w-full bg-white border border-border rounded-lg pl-4 pr-20 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 transition-all shadow-sm" />
                     <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-muted-foreground font-medium">hrs/day</span>
                   </div>
                 </div>
@@ -113,10 +112,10 @@ const EnergyScreen = ({ data, updateData, goBack, goNext }) => {
             <span className="flex items-center justify-center w-10 h-10 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500"><Flame size={20} /></span>
             <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Cooking Fuel</h3>
           </div>
-          <div className="p-5 rounded-xl border border-white/5 bg-black/20 flex-1">
+          <div className="p-5 rounded-xl border border-border bg-white/85 flex-1 shadow-sm">
             <label className="block text-sm font-medium text-foreground mb-3">LPG cylinders used per month</label>
             <div className="relative mb-3">
-              <input type="number" min="0" step="0.1" placeholder="e.g. 0.5" value={data.lpgCylinders} onChange={e => updateData('lpgCylinders', e.target.value)} className="w-full bg-background border border-white/10 rounded-lg pl-4 pr-20 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-red-500 focus:border-red-500 transition-all shadow-sm" />
+              <input type="number" min="0" step="0.1" placeholder="e.g. 0.5" value={data.lpgCylinders} onChange={e => updateData('lpgCylinders', e.target.value)} className="w-full bg-white border border-border rounded-lg pl-4 pr-20 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-red-500 focus:border-red-500 transition-all shadow-sm" />
               <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-muted-foreground font-medium">cyl/mo</span>
             </div>
             <p className="text-xs text-muted-foreground">One 14.2 kg cylinder ≈ 42 kg CO₂e</p>
@@ -135,9 +134,9 @@ const EnergyScreen = ({ data, updateData, goBack, goNext }) => {
               { id: 'ledToggle', title: 'LED lighting', desc: 'Throughout the entire home' }
             ].map(item => (
               <motion.div 
-                whileHover={{ backgroundColor: "rgba(255,255,255,0.05)" }}
+                whileHover={{ backgroundColor: "rgba(237, 248, 238, 0.9)" }}
                 key={item.id} 
-                className="flex items-center justify-between p-3.5 rounded-xl border border-white/5 bg-black/20 cursor-pointer hover:border-white/10 transition-colors"
+                className="flex items-center justify-between p-3.5 rounded-xl border border-border bg-white/85 cursor-pointer hover:border-brand-green/30 transition-colors shadow-sm"
                 onClick={() => updateData(item.id, !data[item.id])}
               >
                 <div>
@@ -146,7 +145,7 @@ const EnergyScreen = ({ data, updateData, goBack, goNext }) => {
                 </div>
                 <label className="relative inline-flex items-center pointer-events-none">
                   <input type="checkbox" className="sr-only peer" checked={data[item.id]} readOnly />
-                  <div className="w-9 h-5 bg-white/10 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-brand-green shadow-inner"></div>
+                  <div className="w-9 h-5 bg-secondary rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-brand-green shadow-inner"></div>
                 </label>
               </motion.div>
             ))}
@@ -154,8 +153,8 @@ const EnergyScreen = ({ data, updateData, goBack, goNext }) => {
         </motion.div>
       </div>
 
-      <motion.div variants={itemVariants} className="pt-6 mt-auto border-t border-white/5 flex items-center justify-between sticky bottom-0 bg-card/90 backdrop-blur-md pb-2 z-20">
-        <button onClick={goBack} className="flex items-center gap-2 text-muted-foreground text-sm font-semibold px-4 py-2 rounded-full hover:bg-white/5 transition-colors focus-visible:outline-none">
+      <motion.div variants={itemVariants} className="pt-6 mt-auto border-t border-border flex items-center justify-between sticky bottom-0 bg-card/90 backdrop-blur-md pb-2 z-20">
+        <button onClick={goBack} className="flex items-center gap-2 text-muted-foreground text-sm font-semibold px-4 py-2 rounded-full hover:bg-secondary transition-colors focus-visible:outline-none">
           <ArrowLeft size={16} /> Back
         </button>
         <button onClick={goNext} className="btn-magic group">

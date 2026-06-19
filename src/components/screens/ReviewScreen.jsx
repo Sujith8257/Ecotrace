@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { ArrowLeft, ArrowRight, Calculator, Map, Zap, Salad } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
+import CalculationJourney from '../CalculationJourney';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -26,7 +27,7 @@ const ReviewScreen = ({ data, goBack, calculate }) => {
 
   return (
     <motion.div 
-      className="flex flex-col h-full overflow-y-auto pr-2 custom-scrollbar"
+      className="relative flex flex-col h-full overflow-y-auto pr-2 custom-scrollbar"
       variants={containerVariants}
       initial="hidden"
       animate="show"
@@ -37,7 +38,7 @@ const ReviewScreen = ({ data, goBack, calculate }) => {
           <span>Step 5 of 5</span>
           <span>Review</span>
         </div>
-        <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden shadow-inner">
+        <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden shadow-inner">
           <motion.div 
             initial={{ width: "80%" }}
             animate={{ width: "100%" }}
@@ -58,7 +59,7 @@ const ReviewScreen = ({ data, goBack, calculate }) => {
       {/* Summary List */}
       <motion.div variants={itemVariants} className="flex flex-col gap-3 mb-8">
         
-        <div className="p-4 rounded-xl border border-white/5 bg-black/20 flex flex-col gap-2">
+        <div className="p-4 rounded-xl border border-border bg-white/85 flex flex-col gap-2 shadow-sm">
           <div className="flex items-center gap-2 text-red-400 font-semibold text-sm mb-2"><Map size={16}/> Transport</div>
           <div className="grid grid-cols-2 gap-y-2 text-sm">
             <div className="text-muted-foreground">Personal Vehicles</div>
@@ -76,7 +77,7 @@ const ReviewScreen = ({ data, goBack, calculate }) => {
           </div>
         </div>
 
-        <div className="p-4 rounded-xl border border-white/5 bg-black/20 flex flex-col gap-2">
+        <div className="p-4 rounded-xl border border-border bg-white/85 flex flex-col gap-2 shadow-sm">
           <div className="flex items-center gap-2 text-amber-500 font-semibold text-sm mb-2"><Zap size={16}/> Energy</div>
           <div className="grid grid-cols-2 gap-y-2 text-sm">
             <div className="text-muted-foreground">Electricity</div>
@@ -88,7 +89,7 @@ const ReviewScreen = ({ data, goBack, calculate }) => {
           </div>
         </div>
 
-        <div className="p-4 rounded-xl border border-white/5 bg-black/20 flex flex-col gap-2">
+        <div className="p-4 rounded-xl border border-border bg-white/85 flex flex-col gap-2 shadow-sm">
           <div className="flex items-center gap-2 text-brand-green font-semibold text-sm mb-2"><Salad size={16}/> Food & Waste</div>
           <div className="grid grid-cols-2 gap-y-2 text-sm">
             <div className="text-muted-foreground">Diet Type</div>
@@ -102,11 +103,11 @@ const ReviewScreen = ({ data, goBack, calculate }) => {
 
       </motion.div>
 
-      <motion.div variants={itemVariants} className="pt-6 mt-auto border-t border-white/5 flex items-center justify-between sticky bottom-0 bg-card/90 backdrop-blur-md pb-2 z-20">
+      <motion.div variants={itemVariants} className="pt-6 mt-auto border-t border-border flex items-center justify-between sticky bottom-0 bg-card/90 backdrop-blur-md pb-2 z-20">
         <button 
           onClick={goBack} 
           disabled={isCalculating}
-          className="flex items-center gap-2 text-muted-foreground text-sm font-semibold px-4 py-2 rounded-full hover:bg-white/5 transition-colors focus-visible:outline-none disabled:opacity-50"
+          className="flex items-center gap-2 text-muted-foreground text-sm font-semibold px-4 py-2 rounded-full hover:bg-secondary transition-colors focus-visible:outline-none disabled:opacity-50"
         >
           <ArrowLeft size={16} /> Back
         </button>
@@ -126,11 +127,29 @@ const ReviewScreen = ({ data, goBack, calculate }) => {
                 Calculating...
               </>
             ) : (
+              <>
                 Calculate my footprint <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
+              </>
             )}
           </span>
         </button>
       </motion.div>
+
+      <AnimatePresence>
+        {isCalculating && (
+          <motion.div
+            className="absolute inset-0 z-40 flex items-center justify-center bg-card/95 px-6 backdrop-blur-md"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <CalculationJourney
+              title="Calculating your result..."
+              subtitle="Following your footprint from habits to CO2 and back to action."
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };

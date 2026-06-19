@@ -104,6 +104,7 @@ function App() {
       case 5:
         return <DashboardScreen 
           data={data} 
+          goHome={() => setCurrentScreen(0)}
           recalculate={() => setCurrentScreen(1)} 
         />;
       default:
@@ -112,18 +113,27 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-background transition-colors duration-500">
-      
-      {/* Global Background Blobs for Dark Theme */}
-      <div className="absolute top-0 -left-4 w-96 h-96 bg-brand-green/10 rounded-full mix-blend-screen filter blur-3xl opacity-50 animate-blob pointer-events-none"></div>
-      <div className="absolute top-0 -right-4 w-96 h-96 bg-emerald-600/10 rounded-full mix-blend-screen filter blur-3xl opacity-50 animate-blob animation-delay-2000 pointer-events-none"></div>
-      <div className="absolute -bottom-8 left-20 w-96 h-96 bg-blue-600/10 rounded-full mix-blend-screen filter blur-3xl opacity-50 animate-blob animation-delay-4000 pointer-events-none"></div>
-      
+    <div className="app-shell min-h-screen relative overflow-hidden bg-background transition-colors duration-500">
+      <div className="absolute left-1/2 top-0 h-px w-[min(960px,90vw)] -translate-x-1/2 bg-gradient-to-r from-transparent via-brand-green/50 to-transparent pointer-events-none" />
+      <div className="absolute -top-40 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full bg-brand-green/10 blur-3xl pointer-events-none" />
+
       <div className="relative z-10 flex flex-col min-h-screen">
-        <Navbar setCurrentScreen={setCurrentScreen} />
+        <Navbar currentScreen={currentScreen} setCurrentScreen={setCurrentScreen} />
         
         <main className="flex-1 flex flex-col">
-          {currentScreen === 5 ? (
+          {currentScreen === 0 ? (
+            <AnimatePresence mode="wait">
+              <motion.div
+                key="landing"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                {renderScreen()}
+              </motion.div>
+            </AnimatePresence>
+          ) : currentScreen === 5 ? (
             // Full width layout for Dashboard
             <motion.div
               initial={{ opacity: 0 }}
@@ -134,10 +144,11 @@ function App() {
             </motion.div>
           ) : (
             // Split screen layout for questionnaire steps
-            <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-8 py-8 flex-1 flex flex-col lg:flex-row items-stretch">
+            <div className="section-container py-8 sm:py-12 lg:py-16 flex-1 flex flex-col lg:flex-row items-stretch gap-8 2xl:gap-16">
               <BrandSidebar />
               
-              <div className="w-full lg:w-[55%] glass-card shadow-2xl p-6 sm:p-10 flex flex-col relative overflow-hidden min-h-[600px]">
+              <div className="w-full lg:flex-1 glass-card p-6 sm:p-8 lg:p-10 2xl:p-12 flex flex-col relative overflow-hidden min-h-[600px]">
+                <div className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-brand-green/30 to-transparent" />
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={currentScreen}

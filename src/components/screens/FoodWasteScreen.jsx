@@ -1,4 +1,3 @@
-import React from 'react';
 import { ArrowLeft, ArrowRight, Salad, Trash2, ShoppingBag } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -40,7 +39,7 @@ const FoodWasteScreen = ({ data, updateData, goBack, calculate }) => {
           <span>Step 4 of 5</span>
           <span>Food & Waste</span>
         </div>
-        <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden shadow-inner">
+        <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden shadow-inner">
           <motion.div 
             initial={{ width: "60%" }}
             animate={{ width: "80%" }}
@@ -70,7 +69,7 @@ const FoodWasteScreen = ({ data, updateData, goBack, calculate }) => {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 key={opt.id} 
-                className={`p-4 rounded-xl border cursor-pointer transition-colors duration-200 ${active ? 'bg-brand-green/10 border-brand-green shadow-[0_0_10px_rgba(74,222,128,0.15)]' : 'bg-black/20 border-white/5 hover:border-white/20'}`}
+                className={`p-4 rounded-xl border cursor-pointer transition-colors duration-200 ${active ? 'bg-brand-green/10 border-brand-green shadow-[0_0_10px_rgba(31,157,85,0.15)]' : 'bg-white/80 border-border hover:border-brand-green/40'}`}
                 onClick={() => updateData('diet', opt.id)}
               >
                 <div className={`font-medium text-sm ${active ? 'text-brand-green' : 'text-foreground/90'}`}>{opt.name}</div>
@@ -84,7 +83,7 @@ const FoodWasteScreen = ({ data, updateData, goBack, calculate }) => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <motion.div variants={itemVariants} className="flex flex-col">
           <div className="flex items-center gap-3 mb-5">
-            <span className="flex items-center justify-center w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-500"><Trash2 size={20} /></span>
+            <span className="flex items-center justify-center w-10 h-10 rounded-xl bg-teal-500/10 border border-teal-500/20 text-teal-400"><Trash2 size={20} /></span>
             <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Household Waste</h3>
           </div>
           <p className="text-sm text-muted-foreground mb-4">How would you describe your waste habits?</p>
@@ -97,15 +96,15 @@ const FoodWasteScreen = ({ data, updateData, goBack, calculate }) => {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   key={opt.id} 
-                  className={`p-3.5 rounded-xl border flex items-center justify-between cursor-pointer transition-colors duration-200 ${active ? 'bg-blue-500/10 border-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.15)]' : 'bg-black/20 border-white/5 hover:border-white/20'}`}
+                  className={`p-3.5 rounded-xl border flex items-center justify-between cursor-pointer transition-colors duration-200 ${active ? 'bg-brand-green/10 border-brand-green shadow-[0_0_10px_rgba(31,157,85,0.15)]' : 'bg-white/80 border-border hover:border-brand-green/40'}`}
                   onClick={() => updateData('waste', opt.id)}
                 >
                   <div>
-                    <div className={`font-medium text-sm ${active ? 'text-blue-400' : 'text-foreground/90'}`}>{opt.name}</div>
-                    <div className={`text-[11px] mt-0.5 ${active ? 'text-blue-400/80' : 'text-muted-foreground'}`}>{opt.desc}</div>
+                    <div className={`font-medium text-sm ${active ? 'text-brand-green' : 'text-foreground/90'}`}>{opt.name}</div>
+                    <div className={`text-[11px] mt-0.5 ${active ? 'text-brand-green/80' : 'text-muted-foreground'}`}>{opt.desc}</div>
                   </div>
-                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${active ? 'border-blue-500 bg-blue-500' : 'border-white/10'}`}>
-                    {active && <motion.div layoutId="wasteActive" className="w-2 h-2 bg-black rounded-full"></motion.div>}
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${active ? 'border-brand-green bg-brand-green' : 'border-border bg-white'}`}>
+                    {active && <motion.div layoutId="wasteActive" className="w-2 h-2 bg-white rounded-full"></motion.div>}
                   </div>
                 </motion.div>
               );
@@ -115,22 +114,22 @@ const FoodWasteScreen = ({ data, updateData, goBack, calculate }) => {
 
         <motion.div variants={itemVariants} className="flex flex-col">
           <div className="flex items-center gap-3 mb-5">
-            <span className="flex items-center justify-center w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-500"><ShoppingBag size={20} /></span>
+            <span className="flex items-center justify-center w-10 h-10 rounded-xl bg-lime-500/10 border border-lime-500/20 text-lime-300"><ShoppingBag size={20} /></span>
             <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Shopping</h3>
           </div>
           
-          <div className="mb-4 p-5 rounded-xl border border-white/5 bg-black/20">
+          <div className="mb-4 p-5 rounded-xl border border-border bg-white/85 shadow-sm">
             <label className="block text-sm font-medium text-foreground mb-3">Monthly spend on new clothing & electronics</label>
             <div className="relative mb-2">
-              <input type="number" min="0" placeholder="e.g. 2000" value={data.shoppingSpend} onChange={e => updateData('shoppingSpend', e.target.value)} className="w-full bg-background border border-white/10 rounded-lg pl-4 pr-16 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 transition-all shadow-sm" />
+              <input type="number" min="0" placeholder="e.g. 2000" value={data.shoppingSpend} onChange={e => updateData('shoppingSpend', e.target.value)} className="w-full bg-white border border-border rounded-lg pl-4 pr-16 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-brand-green focus:border-brand-green transition-all shadow-sm" />
               <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-muted-foreground font-medium">₹/mo</span>
             </div>
-            <p className="text-[11px] text-muted-foreground">approx ₹1000 → ~0.04 tCO₂e/yr from manufacturing</p>
+            <p className="text-[11px] text-muted-foreground">approx ₹1000/mo → ~0.04 tCO₂e/yr from manufacturing</p>
           </div>
 
           <motion.div 
-            whileHover={{ backgroundColor: "rgba(255,255,255,0.05)" }}
-            className="flex items-center justify-between p-3.5 rounded-xl border border-white/5 bg-black/20 cursor-pointer hover:border-white/10 transition-colors"
+            whileHover={{ backgroundColor: "rgba(237, 248, 238, 0.9)" }}
+            className="flex items-center justify-between p-3.5 rounded-xl border border-border bg-white/85 cursor-pointer hover:border-brand-green/30 transition-colors shadow-sm"
             onClick={() => updateData('secondhandToggle', !data.secondhandToggle)}
           >
             <div>
@@ -139,14 +138,14 @@ const FoodWasteScreen = ({ data, updateData, goBack, calculate }) => {
             </div>
             <label className="relative inline-flex items-center pointer-events-none">
               <input type="checkbox" className="sr-only peer" checked={data.secondhandToggle} readOnly />
-              <div className="w-9 h-5 bg-white/10 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-500 shadow-inner"></div>
+              <div className="w-9 h-5 bg-secondary rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-brand-green shadow-inner"></div>
             </label>
           </motion.div>
         </motion.div>
       </div>
 
-      <motion.div variants={itemVariants} className="pt-6 mt-auto border-t border-white/5 flex items-center justify-between sticky bottom-0 bg-card/90 backdrop-blur-md pb-2 z-20">
-        <button onClick={goBack} className="flex items-center gap-2 text-muted-foreground text-sm font-semibold px-4 py-2 rounded-full hover:bg-white/5 transition-colors focus-visible:outline-none">
+      <motion.div variants={itemVariants} className="pt-6 mt-auto border-t border-border flex items-center justify-between sticky bottom-0 bg-card/90 backdrop-blur-md pb-2 z-20">
+        <button onClick={goBack} className="flex items-center gap-2 text-muted-foreground text-sm font-semibold px-4 py-2 rounded-full hover:bg-secondary transition-colors focus-visible:outline-none">
           <ArrowLeft size={16} /> Back
         </button>
         <button onClick={calculate} className="btn-magic group">

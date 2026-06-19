@@ -1,4 +1,3 @@
-import React from 'react';
 import { ArrowLeft, ArrowRight, Car, Bike, Train, Bus, Plane } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -35,7 +34,7 @@ const TransportScreen = ({ data, updateData, goBack, goNext }) => {
   const renderSection = (title, icon, modeIds) => (
     <motion.div variants={itemVariants} className="mb-8">
       <div className="flex items-center gap-2 mb-4">
-        <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-white/5 border border-white/10 text-xl">{icon}</span>
+        <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-secondary border border-border text-xl">{icon}</span>
         <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">{title}</h3>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -47,13 +46,13 @@ const TransportScreen = ({ data, updateData, goBack, goNext }) => {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               key={id} 
-              className={`relative overflow-hidden rounded-xl border transition-colors duration-300 cursor-pointer p-4 flex flex-col ${active ? 'bg-brand-green/10 border-brand-green shadow-[0_0_15px_rgba(74,222,128,0.15)]' : 'bg-black/20 border-white/5 hover:border-white/20'}`} 
+              className={`relative overflow-hidden rounded-xl border transition-colors duration-300 cursor-pointer p-4 flex flex-col ${active ? 'bg-brand-green/10 border-brand-green shadow-[0_0_15px_rgba(31,157,85,0.15)]' : 'bg-white/80 border-border hover:border-brand-green/40'}`} 
               onClick={() => toggleMode(id)}
             >
               {active && <motion.div layoutId={`activeIndicator-${id}`} className="absolute top-0 left-0 w-1 h-full bg-brand-green"></motion.div>}
               <div className="flex items-center justify-between mb-3">
                 <span className={active ? 'text-brand-green' : 'text-muted-foreground'}>{m.icon}</span>
-                <div className={`flex items-center justify-center w-5 h-5 rounded-full border-2 transition-colors ${active ? 'border-brand-green bg-brand-green text-black' : 'border-white/20 bg-transparent'}`}>
+                <div className={`flex items-center justify-center w-5 h-5 rounded-full border-2 transition-colors ${active ? 'border-brand-green bg-brand-green text-white' : 'border-border bg-white'}`}>
                   {active && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
                 </div>
               </div>
@@ -67,7 +66,7 @@ const TransportScreen = ({ data, updateData, goBack, goNext }) => {
                   placeholder={m.ph} 
                   value={data[id] === '0' ? '' : data[id]} 
                   onChange={e => updateData(id, e.target.value)}
-                  className="w-full bg-black/40 border border-white/10 rounded-md px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-brand-green focus:border-brand-green transition-all"
+                  className="w-full bg-white border border-border rounded-md px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-brand-green focus:border-brand-green transition-all"
                 />
                 <div className="text-[10px] text-muted-foreground/80">{m.unit}</div>
               </div>
@@ -91,7 +90,7 @@ const TransportScreen = ({ data, updateData, goBack, goNext }) => {
           <span>Step 2 of 5</span>
           <span>Transport</span>
         </div>
-        <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden shadow-inner">
+        <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden shadow-inner">
           <motion.div 
             initial={{ width: "20%" }}
             animate={{ width: "40%" }}
@@ -110,8 +109,8 @@ const TransportScreen = ({ data, updateData, goBack, goNext }) => {
       {renderSection('Public & Shared Transport', '🚌', ['bus', 'metro', 'railway'])}
       {renderSection('Air Travel (Per Year)', '✈️', ['flightShort', 'flightLong'])}
 
-      <motion.div variants={itemVariants} className="pt-6 mt-8 border-t border-white/5 flex items-center justify-between sticky bottom-0 bg-card/90 backdrop-blur-md pb-2 z-20">
-        <button onClick={goBack} className="flex items-center gap-2 text-muted-foreground text-sm font-semibold px-4 py-2 rounded-full hover:bg-white/5 transition-colors focus-visible:outline-none">
+      <motion.div variants={itemVariants} className="pt-6 mt-8 border-t border-border flex items-center justify-between sticky bottom-0 bg-card/90 backdrop-blur-md pb-2 z-20">
+        <button onClick={goBack} className="flex items-center gap-2 text-muted-foreground text-sm font-semibold px-4 py-2 rounded-full hover:bg-secondary transition-colors focus-visible:outline-none">
           <ArrowLeft size={16} /> Back
         </button>
         <button onClick={goNext} className="btn-magic group">
