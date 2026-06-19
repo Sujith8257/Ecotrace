@@ -178,11 +178,11 @@ export async function calculateFootprintWithAI(userData) {
   for (const key of apiKeys) {
     for (const model of FALLBACK_MODELS) {
       try {
-        console.log(\`Attempting AI inference with key \${key.slice(0,4)}... and model \${model}\`);
+        console.log(`Attempting AI inference with key ${key.slice(0,4)}... and model ${model}`);
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
           method: 'POST',
           headers: {
-            'Authorization': \`Bearer \${key}\`,
+            'Authorization': `Bearer ${key}`,
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
@@ -193,18 +193,18 @@ export async function calculateFootprintWithAI(userData) {
         });
 
         if (response.status === 429) {
-          console.warn(\`Rate limited on \${model} with key \${key.slice(0,4)}...\`);
+          console.warn(`Rate limited on ${model} with key ${key.slice(0,4)}...`);
           continue; // Fallback to next model/key
         }
 
         if (!response.ok) {
-          throw new Error(\`HTTP \${response.status}\`);
+          throw new Error(`HTTP ${response.status}`);
         }
 
         const data = await response.json();
         return JSON.parse(data.choices[0].message.content);
       } catch (e) {
-        console.error(\`AI inference failed for \${model}:\`, e.message);
+        console.error(`AI inference failed for ${model}:`, e.message);
         // Continue loop to try next fallback
       }
     }
