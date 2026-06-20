@@ -238,7 +238,7 @@ export async function calculateFootprintWithAI(userData) {
     for (const model of FALLBACK_MODELS) {
       try {
         console.log(`Attempting AI inference with key ${key.slice(0,4)}... and model ${model}`);
-        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        const response = await fetch('/api/groq/openai/v1/chat/completions', {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${key}`,
