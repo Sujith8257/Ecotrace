@@ -261,7 +261,20 @@ export async function calculateFootprintWithAI(userData) {
         }
 
         const data = await response.json();
-        return JSON.parse(data.choices[0].message.content);
+          const jsonMatch = data.choices[0].message.content.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            const parsed = JSON.parse(jsonMatch[0]);
+            
+            // Validate schema to prevent UI crashes
+            if (!parsed.breakdown || !parsed.breakdown.transport || !parsed.actions || !Array.isArray(parsed.actions)) {
+              throw new Error("LLM returned invalid schema");
+            }
+            
+            return {
+              ...parsed,
+              actions: parsed.actions.slice(0, 4)
+            };
+          }
       } catch (e) {
         console.error(`AI inference failed for ${model}:`, e.message);
         // Continue loop to try next fallback

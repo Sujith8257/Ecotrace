@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { ArrowRight, Leaf, Sparkles, Car, Zap, Salad, Trash2, Check, ArrowLeft, Info, Printer } from 'lucide-react';
+import { ArrowRight, Leaf, Sparkles, Car, Zap, Salad, Trash2, Check, ArrowLeft, Info, Printer, RefreshCw, AlertTriangle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { calculateFootprintWithAI } from '../../services/aiService';
 import CalculationJourney from '../CalculationJourney';
@@ -171,20 +171,22 @@ const DashboardScreen = ({ data, goHome, recalculate }) => {
 
   if (!footprintData) return null;
 
-  const totalSavings = footprintData.actions
+  const totalSavings = (footprintData.actions || [])
     .filter(a => selectedActions.includes(a.id))
-    .reduce((sum, a) => sum + parseFloat(a.savings), 0);
+    .reduce((sum, a) => sum + parseFloat(a.savings || 0), 0);
 
   const totalNum = parseFloat(footprintData.total);
   const futureTotal = Math.max(0, totalNum - totalSavings).toFixed(2);
   const healthScore = getHealthScore(totalNum);
   const scoreBand = getScoreBand(healthScore);
   const getCategoryPercent = (value) => totalNum > 0 ? Math.min(100, (value / totalNum) * 100) : 0;
+  const breakdownData = footprintData.breakdown || {};
+  
   const categoryRows = [
-    { name: 'Transport', icon: <Car size={16}/>, val: parseFloat(footprintData.breakdown.transport), color: 'bg-brand-green', accent: 'text-brand-green', bg: 'bg-brand-green/10', border: 'border-brand-green/20', source: 'DEFRA 2024' },
-    { name: 'Electricity', icon: <Zap size={16}/>, val: parseFloat(footprintData.breakdown.energy), color: 'bg-emerald-400', accent: 'text-emerald-600', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20', source: 'EPA / IEA' },
-    { name: 'Food', icon: <Salad size={16}/>, val: parseFloat(footprintData.breakdown.food), color: 'bg-brand-green', accent: 'text-brand-green', bg: 'bg-brand-green/10', border: 'border-brand-green/20', source: 'IPCC' },
-    { name: 'Waste', icon: <Trash2 size={16}/>, val: parseFloat(footprintData.breakdown.waste), color: 'bg-lime-500', accent: 'text-lime-600', bg: 'bg-lime-500/10', border: 'border-lime-500/20', source: 'Global Carbon Project' }
+    { name: 'Transport', icon: <Car size={16}/>, val: parseFloat(breakdownData.transport || 0), color: 'bg-brand-green', accent: 'text-brand-green', bg: 'bg-brand-green/10', border: 'border-brand-green/20', source: 'DEFRA 2024' },
+    { name: 'Electricity', icon: <Zap size={16}/>, val: parseFloat(breakdownData.energy || 0), color: 'bg-emerald-400', accent: 'text-emerald-600', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20', source: 'EPA / IEA' },
+    { name: 'Food', icon: <Salad size={16}/>, val: parseFloat(breakdownData.food || 0), color: 'bg-brand-green', accent: 'text-brand-green', bg: 'bg-brand-green/10', border: 'border-brand-green/20', source: 'IPCC' },
+    { name: 'Waste', icon: <Trash2 size={16}/>, val: parseFloat(breakdownData.waste || 0), color: 'bg-lime-500', accent: 'text-lime-600', bg: 'bg-lime-500/10', border: 'border-lime-500/20', source: 'Global Carbon Project' }
   ];
 
   const handlePrint = () => {
@@ -397,7 +399,7 @@ const DashboardScreen = ({ data, goHome, recalculate }) => {
             </div>
 
             <div className="grid grid-cols-1 2xl:grid-cols-2 gap-4">
-              {footprintData.actions.map(action => {
+              {(footprintData.actions || []).map(action => {
                 const isSelected = selectedActions.includes(action.id);
                 return (
                   <div 
