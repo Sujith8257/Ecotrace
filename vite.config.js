@@ -9,6 +9,7 @@ export default defineConfig({
       '/api/groq': {
         target: 'https://api.groq.com',
         changeOrigin: true,
+        secure: false,
         rewrite: (path) => path.replace(/^\/api\/groq/, ''),
       },
     },
