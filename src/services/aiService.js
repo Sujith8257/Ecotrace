@@ -122,7 +122,7 @@ export async function calculateFootprint(userData) {
   const biggestKey = getBiggest(breakdown);
   const percentage = total > 0 ? Math.round((breakdown[biggestKey] / total) * 100) : 0;
   
-  let explanation = `Your ${biggestKey} habits contribute ${percentage}% of your total footprint. `;
+  let explanation = `Recommended because ${biggestKey} contributes ${percentage}% of your emissions. `;
   if (biggestKey === 'transport') {
     explanation += 'Most of this comes from vehicle usage or flights. Reducing these trips can lead to significant monthly savings.';
   } else if (biggestKey === 'energy') {
@@ -135,11 +135,51 @@ export async function calculateFootprint(userData) {
 
   const healthScore = Math.max(0, Math.min(100, Math.round(100 - ((total - 170) * (30 / 230)))));
 
+  // Generate deterministic math strings for transparency modal
+  const calculationSteps = [];
+  
+  // Transport math
+  Object.entries(transportFactors).forEach(([field, factor]) => {
+    const val = toNumber(userData.transport[field]);
+    if (val > 0) {
+      calculationSteps.push({ category: 'Transport', text: `${val} km/week × 4.33 weeks × ${factor} kg CO₂/km = ${round(val * factor * WEEKS_PER_MONTH)} kg CO₂e` });
+    }
+  });
+  Object.entries(flightFactors).forEach(([field, factor]) => {
+    const val = toNumber(userData.transport[field]);
+    if (val > 0) {
+      calculationSteps.push({ category: 'Transport', text: `${val} flights/yr × (Avg distance × factor) / 12 = ${round(val * factor)} kg CO₂e/month` });
+    }
+  });
+
+  // Energy math
+  const elec = toNumber(userData.energy.elecKwh);
+  if (elec > 0) {
+    calculationSteps.push({ category: 'Energy', text: `${elec} kWh/month × 0.71 kg CO₂/kWh (Grid) = ${round(elec * 0.71)} kg CO₂e` });
+  }
+  const lpg = toNumber(userData.energy.lpgCylinders);
+  if (lpg > 0) {
+    calculationSteps.push({ category: 'Energy', text: `${lpg} cylinders × 42.0 kg CO₂/cyl = ${round(lpg * 42)} kg CO₂e` });
+  }
+
+  // Food & Waste
+  const dietVal = dietMonthlyFactors[userData.foodWaste.diet] || dietMonthlyFactors.mixed;
+  calculationSteps.push({ category: 'Food', text: `Diet type '${userData.foodWaste.diet}' = ${dietVal} kg CO₂e/month base` });
+  
+  const wasteVal = wasteMonthlyFactors[userData.foodWaste.waste] || wasteMonthlyFactors.average;
+  calculationSteps.push({ category: 'Waste', text: `Waste output '${userData.foodWaste.waste}' = ${wasteVal} kg CO₂e/month base` });
+  
+  const shopping = toNumber(userData.foodWaste.shoppingSpend);
+  if (shopping > 0) {
+    calculationSteps.push({ category: 'Waste', text: `${shopping} INR/month spend × ${format(SHOPPING_KG_PER_RUPEE_MONTHLY)} kg CO₂/INR = ${round(shopping * SHOPPING_KG_PER_RUPEE_MONTHLY)} kg CO₂e` });
+  }
+
   return {
     total: format(total),
     biggest: biggestKey,
     healthScore,
     explanation,
+    calculationSteps,
     breakdown: {
       transport: format(breakdown.transport),
       energy: format(breakdown.energy),

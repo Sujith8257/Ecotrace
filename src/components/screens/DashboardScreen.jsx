@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import { Leaf, ArrowRight, RefreshCw, Car, Zap, Salad, Trash2, Info, User, Check, Sparkles, MessageCircle, AlertTriangle } from 'lucide-react';
+import { ArrowRight, Leaf, Sparkles, Car, Zap, Salad, Trash2, Check, ArrowLeft, Info, Printer } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { calculateFootprintWithAI } from '../../services/aiService';
 import CalculationJourney from '../CalculationJourney';
+import HistoryGraph from '../HistoryGraph';
 import ChatAssistant from '../ChatAssistant';
 import { signInWithGoogle, subscribeToAuth } from '../../services/firebase';
 import { isSupabaseConfigured, saveFootprintEstimate } from '../../services/supabase';
@@ -38,6 +39,7 @@ const DashboardScreen = ({ data, goHome, recalculate }) => {
   const [user, setUser] = useState(null);
   const [saveState, setSaveState] = useState('idle');
   const [saveMessage, setSaveMessage] = useState('');
+  const [showMathModal, setShowMathModal] = useState(false);
   const [autoSavedKey, setAutoSavedKey] = useState('');
   const [currentEstimateId, setCurrentEstimateId] = useState(null);
   const autoSavingKeyRef = useRef('');
@@ -155,13 +157,12 @@ const DashboardScreen = ({ data, goHome, recalculate }) => {
   if (error) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
-        <AlertTriangle size={48} className="text-red-500 mb-6" />
         <h2 className="text-2xl font-bold text-foreground mb-4">Calculation Failed</h2>
         <p className="text-muted-foreground mb-8 max-w-md">{error}</p>
         <button onClick={() => window.location.reload()} className="btn-magic group">
           <span className="btn-magic-glow"></span>
           <span className="btn-magic-inner gap-2 px-6">
-            <RefreshCw size={16} /> Try Again
+            Try Again
           </span>
         </button>
       </div>
@@ -178,26 +179,44 @@ const DashboardScreen = ({ data, goHome, recalculate }) => {
   const futureTotal = Math.max(0, totalNum - totalSavings).toFixed(2);
   const healthScore = getHealthScore(totalNum);
   const scoreBand = getScoreBand(healthScore);
-  const selectedReductionPercent = totalNum > 0 ? (totalSavings / totalNum * 100).toFixed(1) : '0.0';
   const getCategoryPercent = (value) => totalNum > 0 ? Math.min(100, (value / totalNum) * 100) : 0;
   const categoryRows = [
-    { name: 'Transport', icon: <Car size={16}/>, val: parseFloat(footprintData.breakdown.transport), color: 'bg-brand-green', accent: 'text-brand-green', bg: 'bg-brand-green/10', border: 'border-brand-green/20' },
-    { name: 'Electricity', icon: <Zap size={16}/>, val: parseFloat(footprintData.breakdown.energy), color: 'bg-emerald-400', accent: 'text-emerald-600', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20' },
-    { name: 'Food', icon: <Salad size={16}/>, val: parseFloat(footprintData.breakdown.food), color: 'bg-brand-green', accent: 'text-brand-green', bg: 'bg-brand-green/10', border: 'border-brand-green/20' },
-    { name: 'Waste', icon: <Trash2 size={16}/>, val: parseFloat(footprintData.breakdown.waste), color: 'bg-lime-500', accent: 'text-lime-600', bg: 'bg-lime-500/10', border: 'border-lime-500/20' }
+    { name: 'Transport', icon: <Car size={16}/>, val: parseFloat(footprintData.breakdown.transport), color: 'bg-brand-green', accent: 'text-brand-green', bg: 'bg-brand-green/10', border: 'border-brand-green/20', source: 'DEFRA 2024' },
+    { name: 'Electricity', icon: <Zap size={16}/>, val: parseFloat(footprintData.breakdown.energy), color: 'bg-emerald-400', accent: 'text-emerald-600', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20', source: 'EPA / IEA' },
+    { name: 'Food', icon: <Salad size={16}/>, val: parseFloat(footprintData.breakdown.food), color: 'bg-brand-green', accent: 'text-brand-green', bg: 'bg-brand-green/10', border: 'border-brand-green/20', source: 'IPCC' },
+    { name: 'Waste', icon: <Trash2 size={16}/>, val: parseFloat(footprintData.breakdown.waste), color: 'bg-lime-500', accent: 'text-lime-600', bg: 'bg-lime-500/10', border: 'border-lime-500/20', source: 'Global Carbon Project' }
   ];
 
+  const handlePrint = () => {
+    window.print();
+  };
+
   return (
-    <div className="w-full px-4 sm:px-6 xl:px-10 2xl:px-12 py-8 xl:py-10 relative">
+    <div className="w-full px-4 sm:px-6 xl:px-10 2xl:px-12 py-8 xl:py-10 relative print-dashboard">
       
       {/* Top Header */}
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col xl:flex-row justify-between items-start xl:items-end mb-8 gap-6">
         <div>
-          <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand-green mb-2">Your Monthly Baseline</div>
-          <h1 className="text-4xl sm:text-5xl 2xl:text-6xl font-bold text-foreground tracking-tight text-shadow-glow">Here's where you stand.</h1>
+          <button onClick={goHome} className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors mb-4 print:hidden">
+            <ArrowLeft size={16} /> Back to Calculator
+          </button>
+          <div className="flex items-center gap-3 mb-2">
+            <h2 className="text-3xl font-extrabold tracking-tight text-foreground">Your Carbon Dashboard</h2>
+            <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-green/10 border border-brand-green/30 text-brand-green text-xs font-bold">
+              <Check size={12} strokeWidth={3} /> Formula-Based Result
+            </div>
+          </div>
+          <div className="text-muted-foreground">
+            Calculated with transparent emission factors. Treat this as a useful direction, not an exact inventory.
+          </div>
         </div>
-        <div className="max-w-xl text-sm text-muted-foreground leading-relaxed xl:text-right">
-          Calculated with transparent emission factors. Treat this as a useful direction, not an exact inventory.
+        <div className="flex items-center gap-4 print:hidden">
+          <button 
+            onClick={handlePrint}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-secondary border border-border text-foreground text-sm font-bold hover:bg-accent hover:border-accent-foreground/20 transition-all shadow-sm cursor-pointer"
+          >
+            <Printer size={16} /> Download PDF Report
+          </button>
         </div>
       </motion.div>
 
@@ -243,7 +262,6 @@ const DashboardScreen = ({ data, goHome, recalculate }) => {
           {/* Hero Score Card */}
           <motion.div variants={itemVariants} className="relative overflow-hidden rounded-[24px] p-8 sm:p-10 shadow-lg bg-white border border-border min-h-[360px] flex flex-col justify-between">
             <div className="absolute inset-0 bg-gradient-to-br from-brand-green/10 to-transparent opacity-70"></div>
-            <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-brand-green/20 rounded-full blur-[100px] pointer-events-none"></div>
             <div className="relative z-10">
               <div className="flex items-center gap-2 text-sm text-brand-green font-medium mb-4">
                 <Leaf size={16} /> Estimated monthly footprint
@@ -254,9 +272,15 @@ const DashboardScreen = ({ data, goHome, recalculate }) => {
                 </span>
                 <span className="text-lg font-medium text-muted-foreground">kg CO2e</span>
               </div>
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-secondary border border-border text-sm font-medium">
+              <div className="inline-flex flex-wrap items-center gap-2 px-4 py-2 rounded-full bg-secondary border border-border text-sm font-medium">
                 <Sparkles size={16} className="text-amber-400" /> Biggest contributor: <span className="text-foreground capitalize">{footprintData.biggest}</span>
               </div>
+              <button 
+                onClick={() => setShowMathModal(true)}
+                className="mt-4 flex items-center gap-2 text-xs font-bold text-brand-green hover:underline cursor-pointer print:hidden"
+              >
+                <Info size={14} /> Explain Calculation
+              </button>
             </div>
             
             {/* Health Score embedded in Hero Card */}
@@ -273,6 +297,7 @@ const DashboardScreen = ({ data, goHome, recalculate }) => {
               </div>
               <div className="text-[10px] text-muted-foreground mt-2 uppercase tracking-wider">Based on global climate targets</div>
             </div>
+
             <div className="relative z-10 grid grid-cols-2 gap-3 mt-8">
               <div className="rounded-[24px] bg-white/80 border border-border p-4">
                 <div className="text-2xl font-bold text-foreground">{futureTotal}</div>
@@ -287,14 +312,9 @@ const DashboardScreen = ({ data, goHome, recalculate }) => {
 
           {/* Breakdown Card */}
           <motion.div variants={itemVariants} className="bg-white/85 backdrop-blur-xl border border-border rounded-[24px] p-8 shadow-sm">
-            <div className="flex items-center justify-between mb-8 cursor-pointer group">
-              <div>
-                <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-1">Your Breakdown</div>
-                <h3 className="text-xl font-bold text-foreground">What shapes your total</h3>
-              </div>
-              <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-muted-foreground group-hover:bg-accent group-hover:text-foreground transition-colors">
-                <ArrowRight size={16} />
-              </div>
+            <div className="mb-8">
+              <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-1">Your Breakdown</div>
+              <h3 className="text-xl font-bold text-foreground">What shapes your total</h3>
             </div>
 
             <div className="space-y-6">
@@ -302,7 +322,8 @@ const DashboardScreen = ({ data, goHome, recalculate }) => {
                 <div key={i}>
                   <div className="flex items-center justify-between mb-2 text-sm">
                     <div className="flex items-center gap-2 text-muted-foreground font-medium">
-                      <span className={cat.accent}>{cat.icon}</span> {cat.name}
+                      <span className={cat.accent}>{cat.icon}</span> {cat.name} 
+                      <span className="text-[10px] uppercase text-muted-foreground/60 ml-1">({cat.source})</span>
                     </div>
                     <div className="font-semibold text-foreground/90">{cat.val.toFixed(1)} <span className="text-xs text-muted-foreground font-normal">kg</span></div>
                   </div>
@@ -357,6 +378,15 @@ const DashboardScreen = ({ data, goHome, recalculate }) => {
                 </div>
               ))}
             </div>
+          </motion.div>
+
+          {/* History Graph Card */}
+          <motion.div variants={itemVariants} className="2xl:col-span-2 bg-white/85 backdrop-blur-xl border border-border rounded-[24px] p-8 shadow-sm">
+            <div className="mb-2">
+              <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-1">Track</div>
+              <h3 className="text-xl font-bold text-foreground">Footprint History</h3>
+            </div>
+            <HistoryGraph currentTotal={totalNum} />
           </motion.div>
 
           {/* Action Plan Card (Interactive Simulator) */}
@@ -554,6 +584,43 @@ const DashboardScreen = ({ data, goHome, recalculate }) => {
         footprintData={footprintData} 
       />
 
+      {/* Math Explanation Modal */}
+      {showMathModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm print:hidden">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white border border-border rounded-2xl shadow-xl max-w-xl w-full max-h-[80vh] overflow-hidden flex flex-col"
+          >
+            <div className="p-6 border-b border-border flex justify-between items-center bg-secondary/30">
+              <h3 className="text-xl font-bold text-foreground flex items-center gap-2">
+                <Info size={20} className="text-brand-green" /> How We Calculate
+              </h3>
+              <button onClick={() => setShowMathModal(false)} className="text-muted-foreground hover:text-foreground">✕</button>
+            </div>
+            <div className="p-6 overflow-y-auto">
+              <p className="text-sm text-muted-foreground mb-6">
+                Unlike many AI sustainability tools, Ecotrace uses deterministic, published emission factors (from DEFRA, EPA, IPCC) to calculate your footprint. 
+                Here is the exact math used for your result:
+              </p>
+              
+              <div className="space-y-4 font-mono text-xs sm:text-sm">
+                {footprintData.calculationSteps?.map((step, i) => (
+                  <div key={i} className="p-3 bg-secondary/50 rounded border border-border/50">
+                    <div className="font-bold text-[10px] uppercase tracking-widest text-brand-green mb-1 sans-serif">{step.category}</div>
+                    <div className="text-foreground">{step.text}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="p-6 border-t border-border bg-secondary/30">
+              <button onClick={() => setShowMathModal(false)} className="w-full py-2.5 bg-brand-green hover:bg-brand-green/90 text-white font-bold rounded-xl transition-colors">
+                Got it
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 };

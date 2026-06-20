@@ -14,6 +14,8 @@
 
 ## EcoTrace AI - Sustainability Coach
 
+> **Important Note:** Unlike many AI sustainability tools, Ecotrace does not use AI to estimate emissions. All carbon calculations are deterministic and based on published emission factors. AI is only used to explain results and provide personalized coaching.
+
 EcoTrace AI is an AI-powered sustainability coach with transparent carbon calculations. Most people want to reduce their carbon footprint but have no idea where to start. EcoTrace transforms everyday habits into a measurable carbon baseline and provides a practical, interactive action plan to help you reduce your impact.
 
 ## Why This Matters
