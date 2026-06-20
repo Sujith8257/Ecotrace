@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { ArrowRight, Leaf, Sparkles, Car, Zap, Salad, Trash2, Check, ArrowLeft, Info, Printer, RefreshCw, AlertTriangle } from 'lucide-react';
+import { ArrowRight, Leaf, Sparkles, Car, Zap, Salad, Trash2, Check, ArrowLeft, Info, Printer, RefreshCw, AlertTriangle, MessageCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { calculateFootprintWithAI } from '../../services/aiService';
 import CalculationJourney from '../CalculationJourney';
@@ -177,6 +177,7 @@ const DashboardScreen = ({ data, goHome, recalculate }) => {
 
   const totalNum = parseFloat(footprintData.total);
   const futureTotal = Math.max(0, totalNum - totalSavings).toFixed(2);
+  const selectedReductionPercent = totalNum > 0 ? (totalSavings / totalNum * 100).toFixed(1) : '0.0';
   const healthScore = getHealthScore(totalNum);
   const scoreBand = getScoreBand(healthScore);
   const getCategoryPercent = (value) => totalNum > 0 ? Math.min(100, (value / totalNum) * 100) : 0;

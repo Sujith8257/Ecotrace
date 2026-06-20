@@ -1,5 +1,6 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { ErrorBoundary } from 'react-error-boundary';
 import Navbar from './components/Navbar';
 import BrandSidebar from './components/BrandSidebar';
 
@@ -10,6 +11,28 @@ const FoodWasteScreen = lazy(() => import('./components/screens/FoodWasteScreen'
 const ReviewScreen = lazy(() => import('./components/screens/ReviewScreen'));
 const DashboardScreen = lazy(() => import('./components/screens/DashboardScreen'));
 const MethodologyScreen = lazy(() => import('./components/screens/MethodologyScreen'));
+
+function ErrorFallback({ error, resetErrorBoundary }) {
+  return (
+    <div className="flex h-screen flex-col items-center justify-center text-center px-4 bg-background">
+      <div className="max-w-md p-8 rounded-2xl border border-red-500/20 bg-red-500/5 shadow-lg">
+        <h2 className="text-2xl font-bold text-red-500 mb-4">Something went wrong</h2>
+        <p className="text-sm text-muted-foreground mb-6 font-mono bg-secondary p-3 rounded text-left overflow-auto max-h-32">
+          {error.message}
+        </p>
+        <button 
+          onClick={() => {
+            resetErrorBoundary();
+            window.location.reload();
+          }} 
+          className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl transition-colors"
+        >
+          Try Again
+        </button>
+      </div>
+    </div>
+  );
+}
 
 const initialData = {
   transport: {
@@ -131,55 +154,61 @@ function App() {
         
         <main className="flex-1 flex flex-col">
           {currentScreen === 0 ? (
-            <AnimatePresence mode="wait">
+            <ErrorBoundary FallbackComponent={ErrorFallback}>
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key="landing"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  <Suspense fallback={<div className="flex h-screen items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-green border-t-transparent"></div></div>}>
+                    {renderScreen()}
+                  </Suspense>
+                </motion.div>
+              </AnimatePresence>
+            </ErrorBoundary>
+          ) : currentScreen === 5 || currentScreen === 6 ? (
+            // Full width layout for Dashboard and Methodology
+            <ErrorBoundary FallbackComponent={ErrorFallback}>
               <motion.div
-                key="landing"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
                 transition={{ duration: 0.5 }}
+                className="flex-1"
               >
                 <Suspense fallback={<div className="flex h-screen items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-green border-t-transparent"></div></div>}>
                   {renderScreen()}
                 </Suspense>
               </motion.div>
-            </AnimatePresence>
-          ) : currentScreen === 5 || currentScreen === 6 ? (
-            // Full width layout for Dashboard and Methodology
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.5 }}
-              className="flex-1"
-            >
-              <Suspense fallback={<div className="flex h-screen items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-green border-t-transparent"></div></div>}>
-                {renderScreen()}
-              </Suspense>
-            </motion.div>
+            </ErrorBoundary>
           ) : (
             // Split screen layout for questionnaire steps
-            <div className="section-container py-8 sm:py-12 lg:py-16 flex-1 flex flex-col lg:flex-row items-stretch gap-8 2xl:gap-16">
-              <BrandSidebar />
-              
-              <div className="w-full lg:flex-1 glass-card p-6 sm:p-8 lg:p-10 2xl:p-12 flex flex-col relative overflow-hidden min-h-[600px]">
-                <div className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-brand-green/30 to-transparent" />
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={currentScreen}
-                    initial="initial"
-                    animate="in"
-                    exit="out"
-                    variants={pageVariants}
-                    transition={pageTransition}
-                    className="flex-1 flex flex-col h-full"
-                  >
-                    <Suspense fallback={<div className="flex h-full items-center justify-center p-8"><div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-green border-t-transparent"></div></div>}>
-                      {renderScreen()}
-                    </Suspense>
-                  </motion.div>
-                </AnimatePresence>
+            <ErrorBoundary FallbackComponent={ErrorFallback}>
+              <div className="section-container py-8 sm:py-12 lg:py-16 flex-1 flex flex-col lg:flex-row items-stretch gap-8 2xl:gap-16">
+                <BrandSidebar />
+                
+                <div className="w-full lg:flex-1 glass-card p-6 sm:p-8 lg:p-10 2xl:p-12 flex flex-col relative overflow-hidden min-h-[600px]">
+                  <div className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-brand-green/30 to-transparent" />
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={currentScreen}
+                      initial="initial"
+                      animate="in"
+                      exit="out"
+                      variants={pageVariants}
+                      transition={pageTransition}
+                      className="flex-1 flex flex-col h-full"
+                    >
+                      <Suspense fallback={<div className="flex h-full items-center justify-center p-8"><div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-green border-t-transparent"></div></div>}>
+                        {renderScreen()}
+                      </Suspense>
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
               </div>
-            </div>
+            </ErrorBoundary>
           )}
         </main>
       </div>
