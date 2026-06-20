@@ -263,11 +263,11 @@ const DashboardScreen = ({ data, goHome, recalculate }) => {
             <div className="relative z-10 mt-6 pt-6 border-t border-border/50">
               <div className="flex justify-between items-center mb-2">
                 <div className="text-sm font-bold text-foreground">Carbon Health Score</div>
-                <div className={`text-sm font-bold ${scoreBand.color}`}>{healthScore}/100</div>
+                <div className={`text-sm font-bold ${healthScore >= 80 ? 'text-brand-green' : healthScore >= 50 ? 'text-amber-500' : 'text-red-500'}`}>{healthScore}/100</div>
               </div>
               <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
                 <div 
-                  className={`h-full ${scoreBand.color.replace('text-', 'bg-')} transition-all duration-1000`} 
+                  className={`h-full ${healthScore >= 80 ? 'bg-brand-green' : healthScore >= 50 ? 'bg-amber-400' : 'bg-red-400'} transition-all duration-1000`} 
                   style={{ width: `${healthScore}%` }}
                 />
               </div>
