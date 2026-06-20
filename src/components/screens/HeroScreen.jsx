@@ -31,7 +31,7 @@ const HeroScreen = ({ goNext }) => {
       <section className="relative isolate flex min-h-[calc(100vh-80px)] items-center overflow-hidden">
         <img
           src={heroImage}
-          alt=""
+          alt="EcoTrace AI Hero Image representing a greener future"
           className="absolute inset-0 -z-20 h-full w-full object-cover"
         />
         <div className="absolute inset-0 -z-10 bg-gradient-to-b from-white/88 via-white/78 to-background" />
@@ -62,7 +62,7 @@ const HeroScreen = ({ goNext }) => {
               variants={fadeUp}
               className="mt-6 max-w-3xl text-base leading-8 text-muted-foreground sm:text-lg"
             >
-              Turn everyday choices into an explainable carbon footprint estimate, then see the clearest places to reduce impact without guessing.
+              An AI-powered sustainability coach with transparent carbon calculations. Turn everyday choices into an explainable baseline, then see the clearest places to reduce impact without guessing.
             </motion.p>
 
             <motion.div variants={fadeUp} className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">

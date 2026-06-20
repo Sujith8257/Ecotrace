@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Leaf, ArrowRight, RefreshCw, Car, Zap, Salad, Trash2, Info, User, Check, Sparkles, MessageCircle, AlertTriangle, Save } from 'lucide-react';
+import { Leaf, ArrowRight, RefreshCw, Car, Zap, Salad, Trash2, Info, User, Check, Sparkles, MessageCircle, AlertTriangle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { calculateFootprintWithAI } from '../../services/aiService';
 import CalculationJourney from '../CalculationJourney';
@@ -258,6 +258,21 @@ const DashboardScreen = ({ data, goHome, recalculate }) => {
                 <Sparkles size={16} className="text-amber-400" /> Biggest contributor: <span className="text-foreground capitalize">{footprintData.biggest}</span>
               </div>
             </div>
+            
+            {/* Health Score embedded in Hero Card */}
+            <div className="relative z-10 mt-6 pt-6 border-t border-border/50">
+              <div className="flex justify-between items-center mb-2">
+                <div className="text-sm font-bold text-foreground">Carbon Health Score</div>
+                <div className={`text-sm font-bold ${scoreBand.color}`}>{healthScore}/100</div>
+              </div>
+              <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
+                <div 
+                  className={`h-full ${scoreBand.color.replace('text-', 'bg-')} transition-all duration-1000`} 
+                  style={{ width: `${healthScore}%` }}
+                />
+              </div>
+              <div className="text-[10px] text-muted-foreground mt-2 uppercase tracking-wider">Based on global climate targets</div>
+            </div>
             <div className="relative z-10 grid grid-cols-2 gap-3 mt-8">
               <div className="rounded-[24px] bg-white/80 border border-border p-4">
                 <div className="text-2xl font-bold text-foreground">{futureTotal}</div>
@@ -304,11 +319,51 @@ const DashboardScreen = ({ data, goHome, recalculate }) => {
             </div>
           </motion.div>
 
-          {/* Action Plan Card */}
+          {/* Explainability Card */}
+          <motion.div variants={itemVariants} className="2xl:col-span-2 bg-white/85 backdrop-blur-xl border border-border rounded-[24px] p-8 shadow-sm">
+            <div className="mb-4">
+              <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand-green mb-1">Insights</div>
+              <h3 className="text-xl font-bold text-foreground">Why this result?</h3>
+            </div>
+            <p className="text-muted-foreground text-sm leading-relaxed">
+              {footprintData.explanation || `Your ${footprintData.biggest} habits are your largest emission source. Focus on reducing activities in this category to see the biggest drop in your monthly footprint.`}
+            </p>
+          </motion.div>
+
+          {/* Benchmarking Card */}
+          <motion.div variants={itemVariants} className="2xl:col-span-2 bg-white/85 backdrop-blur-xl border border-border rounded-[24px] p-8 shadow-sm">
+            <div className="mb-6">
+              <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-1">Context</div>
+              <h3 className="text-xl font-bold text-foreground">How do you compare?</h3>
+            </div>
+            <div className="space-y-4">
+              {[
+                { label: 'You', value: totalNum, color: 'bg-brand-green' },
+                { label: 'Paris Target', value: 170, color: 'bg-amber-400' },
+                { label: 'Indian Average', value: 160, color: 'bg-blue-400' },
+                { label: 'Global Average', value: 400, color: 'bg-red-400' }
+              ].map((bench, i) => (
+                <div key={i}>
+                  <div className="flex justify-between text-xs font-bold mb-1">
+                    <span className="text-foreground">{bench.label}</span>
+                    <span className="text-muted-foreground">{bench.value.toFixed(1)} kg/mo</span>
+                  </div>
+                  <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
+                    <div 
+                      className={`h-full ${bench.color}`} 
+                      style={{ width: `${Math.min(100, (bench.value / Math.max(totalNum, 400)) * 100)}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* Action Plan Card (Interactive Simulator) */}
           <motion.div variants={itemVariants} className="2xl:col-span-2 bg-white/85 backdrop-blur-xl border border-border rounded-[24px] p-8 shadow-sm">
             <div className="mb-8">
-              <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-1">Climate Action Plan</div>
-              <h3 className="text-xl font-bold text-foreground">Tailored recommendations</h3>
+              <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand-green mb-1">Interactive What-If Simulator</div>
+              <h3 className="text-xl font-bold text-foreground">Select actions to preview your new baseline</h3>
             </div>
 
             <div className="grid grid-cols-1 2xl:grid-cols-2 gap-4">

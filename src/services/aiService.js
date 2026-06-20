@@ -119,10 +119,27 @@ export async function calculateFootprint(userData) {
     waste: round(calculateWaste(userData.foodWaste)),
   };
   const total = Object.values(breakdown).reduce((sum, value) => sum + value, 0);
+  const biggestKey = getBiggest(breakdown);
+  const percentage = total > 0 ? Math.round((breakdown[biggestKey] / total) * 100) : 0;
+  
+  let explanation = `Your ${biggestKey} habits contribute ${percentage}% of your total footprint. `;
+  if (biggestKey === 'transport') {
+    explanation += 'Most of this comes from vehicle usage or flights. Reducing these trips can lead to significant monthly savings.';
+  } else if (biggestKey === 'energy') {
+    explanation += 'Most of this comes from grid electricity or cooling. Switching to efficient appliances or solar offsets can help.';
+  } else if (biggestKey === 'food') {
+    explanation += 'Diet has a heavy impact. Replacing a few meat-heavy meals with Dal, Rajma, or Chole can substantially lower this.';
+  } else {
+    explanation += 'Consumer spending and waste add up. Choosing second-hand or repairing items reduces manufacturing emissions.';
+  }
+
+  const healthScore = Math.max(0, Math.min(100, Math.round(100 - ((total - 170) * (30 / 230)))));
 
   return {
     total: format(total),
-    biggest: getBiggest(breakdown),
+    biggest: biggestKey,
+    healthScore,
+    explanation,
     breakdown: {
       transport: format(breakdown.transport),
       energy: format(breakdown.energy),
@@ -160,6 +177,8 @@ export async function calculateFootprintWithAI(userData) {
   {
     "total": "450.50",
     "biggest": "transport",
+    "healthScore": 85,
+    "explanation": "Your transport habits contribute 48% of your total footprint. Most of this comes from flights.",
     "breakdown": { "transport": "150.00", "energy": "100.00", "food": "150.50", "waste": "50.00" },
     "actions": [
       {
