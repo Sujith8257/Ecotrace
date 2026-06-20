@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { ArrowRight, Leaf, Sparkles, Car, Zap, Salad, Trash2, Check, ArrowLeft, Info, Printer, RefreshCw, AlertTriangle, MessageCircle } from 'lucide-react';
+import { ArrowRight, Leaf, Sparkles, Car, Zap, Salad, Trash2, Check, ArrowLeft, Info, Printer, RefreshCw, AlertTriangle, MessageCircle, User } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { calculateFootprintWithAI } from '../../services/aiService';
 import CalculationJourney from '../CalculationJourney';

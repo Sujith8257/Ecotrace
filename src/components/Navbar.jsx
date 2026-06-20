@@ -1,4 +1,4 @@
-import { History, Home, Leaf, LogOut, RefreshCw, User, X } from 'lucide-react';
+import { History, Home, Leaf, LogOut, RefreshCw, User, X, Check } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { signInWithGoogle, signOutUser, subscribeToAuth } from '../services/firebase';
 import { getFootprintHistory } from '../services/supabase';
@@ -28,6 +28,7 @@ const Navbar = ({ currentScreen, setCurrentScreen, loadHistoryItem }) => {
   const [historyItems, setHistoryItems] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyError, setHistoryError] = useState('');
+  const [showLogoutPopup, setShowLogoutPopup] = useState(false);
 
   useEffect(() => {
     return subscribeToAuth((nextUser) => {
@@ -70,6 +71,13 @@ const Navbar = ({ currentScreen, setCurrentScreen, loadHistoryItem }) => {
       await signOutUser();
       setHistoryOpen(false);
       setHistoryItems([]);
+      if (setCurrentScreen) {
+        setCurrentScreen(0);
+      }
+      setShowLogoutPopup(true);
+      setTimeout(() => {
+        setShowLogoutPopup(false);
+      }, 1000);
     } catch (error) {
       console.error('Google sign-out failed:', error);
       setAuthError('Sign-out failed. Try again.');
@@ -269,6 +277,16 @@ const Navbar = ({ currentScreen, setCurrentScreen, loadHistoryItem }) => {
                 })}
               </div>
             )}
+          </div>
+        </div>
+      )}
+      {showLogoutPopup && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center pointer-events-none px-4">
+          <div className="bg-white text-foreground px-6 py-4 rounded-full shadow-2xl border border-brand-green/20 flex items-center gap-3 animate-in fade-in slide-in-from-bottom-10 duration-300">
+            <div className="h-8 w-8 rounded-full bg-brand-green/20 flex items-center justify-center">
+              <Check size={16} className="text-brand-green" />
+            </div>
+            <span className="font-bold">Logout successful</span>
           </div>
         </div>
       )}
