@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Send, Leaf, Sparkles, MessageCircle, RefreshCw } from 'lucide-react';
+import { X, Send, Leaf, Sparkles, RefreshCw } from 'lucide-react';
 import { chatWithTrace } from '../services/aiService';
 
 export default function ChatAssistant({ isOpen, onClose, footprintData }) {

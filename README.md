@@ -12,17 +12,68 @@
 
 ---
 
-## ⚡ Overview
+## EcoTrace AI - Sustainability Coach
 
-Ecotrace AI is a premium, interactive SaaS web application designed to help users baseline their monthly carbon footprint without guilt trips. It guides users through transport, energy, food, waste, and shopping habits, then calculates a transparent estimate with deterministic formulas.
+EcoTrace AI is an AI-powered sustainability coach with transparent carbon calculations. Most people want to reduce their carbon footprint but have no idea where to start. EcoTrace transforms everyday habits into a measurable carbon baseline and provides a practical, interactive action plan to help you reduce your impact.
 
-## ✨ Key Features
+## Why This Matters
+Climate action often feels overwhelming. Generic advice like "eat less meat" or "drive less" is hard to quantify. EcoTrace AI takes a different approach: it calculates a personalized baseline using rigorous scientific factors, then acts as an interactive coach to highlight the exact choices that will yield the biggest reductions for *your* specific lifestyle.
 
-- **White and Green UI**: Light surfaces, green accents, pill controls, bold typography, and refined cards.
-- **Guided Split-Screen Flow**: The brand story stays visible while the questionnaire transitions through each lifestyle category.
-- **Deterministic Formula Engine**: No API keys, no LLM calls, and no hidden inference. The calculator uses explicit monthly emission factors.
-- **Transparent Recommendations**: The dashboard generates four targeted actions from the user's highest-impact categories.
-- **Interactive Dashboard**: As you select recommended actions, the "Future Footprint" calculator updates monthly CO2e savings in real time.
+### Why AI?
+The deterministic engine calculates emissions with scientific consistency. The AI layer interprets results, explains emission drivers, answers user questions, and generates personalized reduction plans tailored to individual lifestyles.
+
+## Impact
+- **Visibility:** Understand exactly what drives your emissions.
+- **Actionability:** Get a prioritized list of practical changes, from switching to local cuisine (e.g., Dal/Rajma) to modifying transit habits.
+- **Benchmarking:** Compare your monthly footprint to concrete targets:
+  - Indian Average: ~160 kg CO₂e/month
+  - Global Average: ~400 kg CO₂e/month
+  - Paris Agreement Target: ~170 kg CO₂e/month
+- **Simulation:** Use the interactive What-If Simulator to preview how small habit changes affect your projected footprint.
+
+**Example Insight:**
+- Current footprint: 420 kg/month
+- Largest source: Transportation (48%)
+- Potential reduction:
+  - Bus instead of scooter twice weekly: -18 kg/month
+  - One fewer short-haul flight/year: -12 kg/month
+  - Solar offset enabled: -15 kg/month
+
+## Screenshots
+*(Note: Upload these screenshots into your repository before final submission!)*
+
+- **Landing Page:** `![Landing Page](./src/assets/screenshots/landing.png)`
+- **Calculator:** `![Calculator](./src/assets/screenshots/calculator.png)`
+- **Dashboard:** `![Dashboard](./src/assets/screenshots/dashboard.png)`
+- **What-If Simulator:** `![What-If Simulator](./src/assets/screenshots/what-if.png)`
+- **AI Coach:** `![AI Coach](./src/assets/screenshots/ai-coach.png)`
+
+## Carbon Methodology
+To ensure maximum trust and reliability, EcoTrace AI uses a **deterministic engine** for its core footprint calculations, rather than relying on AI to guess raw emission numbers. 
+
+### Scientific Sources
+| Category | Source | Usage |
+|----------|--------|-------|
+| **Transport** | DEFRA | Per-km emissions for passenger vehicles and public transit. |
+| **Energy** | EPA / IEA | Grid electricity averages and LPG emissions. |
+| **Food** | IPCC | Dietary archetypes and lifecycle emissions. |
+| **Waste** | Global Carbon Project | Household waste and consumer spending intensity. |
+
+The AI layer is strictly used for **sustainability coaching**: interpreting the deterministic breakdown, generating personalized advice, and guiding the user through interactive chat.
+
+## Sustainability Metrics (Score)
+Users receive a visual **Carbon Health Score (0-100)** calculated against the Paris Agreement target (approx 170 kg CO₂e / month per capita). 
+
+## Future Roadmap
+- Deeper localization for city-specific grid emission factors.
+- Integration with smart-home APIs for automatic electricity logging.
+- Community challenges and leaderboards for collective impact tracking.
+
+## Technical Stack
+- React 19 + Vite
+- Tailwind CSS 4 + Framer Motion
+- Firebase (Auth) + Supabase (PostgreSQL History)
+- Groq AI (Llama-3 / Qwen) for rapid coaching inference
 
 ## 🚀 Quick Start
 
@@ -76,8 +127,9 @@ The returned object feeds the dashboard with `total`, `biggest`, `breakdown`, an
 
 ## 🎯 Hackathon Problem Statement Alignment
 
-This project directly addresses the hackathon problem statement:
+This project directly addresses the hackathon problem statement to "understand, track, and reduce" carbon footprints:
 
+- **Personalized Carbon Literacy** — EcoTrace helps users understand not only their footprint, but why it exists and which actions will create the greatest impact.
 - **Meaningful Actionability** — Breaks complex global carbon emission problems into relatable, everyday user habits. The deterministic engine provides baseline measurements and identifies the user's largest carbon contributor.
 - **Context-Aware Recommendations** — The formula engine uses the user's lifestyle profile to recommend targeted emission-reduction strategies with monthly kilogram savings.
 - **Transparent Coaching** — EcoTrace avoids hallucinated AI math. Calculations and assumptions are formula-based and inspectable.

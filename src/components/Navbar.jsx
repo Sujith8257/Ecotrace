@@ -139,6 +139,12 @@ const Navbar = ({ currentScreen, setCurrentScreen, loadHistoryItem }) => {
                 {label}
               </button>
             ))}
+            <button
+              onClick={() => setCurrentScreen(6)}
+              className="inline-flex h-9 items-center justify-center rounded-full px-3 text-xs font-semibold text-brand-green bg-brand-green/10 transition-colors hover:bg-brand-green/20 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring/40 sm:px-4 sm:text-sm"
+            >
+              Methodology
+            </button>
           </div>
 
           <div className="flex items-center justify-start gap-2 sm:gap-3 md:justify-end">
@@ -184,6 +190,7 @@ const Navbar = ({ currentScreen, setCurrentScreen, loadHistoryItem }) => {
                   onClick={handleSignOut}
                   disabled={authBusy}
                   title="Sign out"
+                  aria-label="Sign out"
                   className="inline-flex h-8 w-8 items-center justify-center rounded-full text-red-500 transition-colors hover:bg-red-50 disabled:opacity-50"
                 >
                   <LogOut size={16} />
@@ -213,6 +220,7 @@ const Navbar = ({ currentScreen, setCurrentScreen, loadHistoryItem }) => {
               </div>
               <button
                 onClick={() => setHistoryOpen(false)}
+                aria-label="Close history"
                 className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
               >
                 <X size={14} /> Close

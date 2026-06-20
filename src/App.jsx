@@ -1,13 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import Navbar from './components/Navbar';
 import BrandSidebar from './components/BrandSidebar';
-import HeroScreen from './components/screens/HeroScreen';
-import TransportScreen from './components/screens/TransportScreen';
-import EnergyScreen from './components/screens/EnergyScreen';
-import FoodWasteScreen from './components/screens/FoodWasteScreen';
-import ReviewScreen from './components/screens/ReviewScreen';
-import DashboardScreen from './components/screens/DashboardScreen';
+
+const HeroScreen = lazy(() => import('./components/screens/HeroScreen'));
+const TransportScreen = lazy(() => import('./components/screens/TransportScreen'));
+const EnergyScreen = lazy(() => import('./components/screens/EnergyScreen'));
+const FoodWasteScreen = lazy(() => import('./components/screens/FoodWasteScreen'));
+const ReviewScreen = lazy(() => import('./components/screens/ReviewScreen'));
+const DashboardScreen = lazy(() => import('./components/screens/DashboardScreen'));
+const MethodologyScreen = lazy(() => import('./components/screens/MethodologyScreen'));
 
 const initialData = {
   transport: {
@@ -107,6 +109,8 @@ function App() {
           goHome={() => setCurrentScreen(0)}
           recalculate={() => setCurrentScreen(1)} 
         />;
+      case 6:
+        return <MethodologyScreen goBack={() => setCurrentScreen(0)} />;
       default:
         return <HeroScreen goNext={() => setCurrentScreen(1)} />;
     }
@@ -135,17 +139,22 @@ function App() {
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.5 }}
               >
-                {renderScreen()}
+                <Suspense fallback={<div className="flex h-screen items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-green border-t-transparent"></div></div>}>
+                  {renderScreen()}
+                </Suspense>
               </motion.div>
             </AnimatePresence>
-          ) : currentScreen === 5 ? (
-            // Full width layout for Dashboard
+          ) : currentScreen === 5 || currentScreen === 6 ? (
+            // Full width layout for Dashboard and Methodology
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5 }}
+              className="flex-1"
             >
-              {renderScreen()}
+              <Suspense fallback={<div className="flex h-screen items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-green border-t-transparent"></div></div>}>
+                {renderScreen()}
+              </Suspense>
             </motion.div>
           ) : (
             // Split screen layout for questionnaire steps
@@ -164,7 +173,9 @@ function App() {
                     transition={pageTransition}
                     className="flex-1 flex flex-col h-full"
                   >
-                    {renderScreen()}
+                    <Suspense fallback={<div className="flex h-full items-center justify-center p-8"><div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-green border-t-transparent"></div></div>}>
+                      {renderScreen()}
+                    </Suspense>
                   </motion.div>
                 </AnimatePresence>
               </div>
